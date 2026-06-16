@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block title %}NFS-e {{ nota.numero_rps }}{% endblock %}
+{% block page_title %}NFS-e RPS {{ nota.numero_rps }}/{{ nota.serie_rps }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="mb-3">
+        <a href="{% url 'fiscal:lista_nfse' %}" class="btn btn-secondary btn-sm">← Voltar</a>
+        {% if nota.status == 'RASCUNHO' or nota.status == 'REJEITADA' %}
+        <form method="post" action="{% url 'fiscal:emitir_nfse' nota.id %}" class="d-inline">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-success btn-sm">Emitir NFS-e</button>
+        </form>
+        {% endif %}
+        {% if nota.status == 'AUTORIZADA' %}
+        <a href="{% url 'fiscal:imprimir_nfse_pdf' nota.id %}" class="btn btn-primary btn-sm" target="_blank">PDF</a>
+        {% if nota.link_nfse %}<a href="{{ nota.link_nfse }}" class="btn btn-outline-primary btn-sm" target="_blank">Link oficial</a>{% endif %}
+        <a href="{% url 'fiscal:cancelar_nfse' nota.id %}" class="btn btn-danger btn-sm">Cancelar</a>
+        {% endif %}
+    </div>
+
+    <div class="card mb-3">
+        <div class="card-body">
+            <p><strong>Status:</strong> {{ nota.get_status_display }}</p>
+            <p><strong>Loja:</strong> {{ nota.loja.nome }}</p>
+            <p><strong>Tomador:</strong> {{ nota.nome_tomador }} {% if nota.cpf_cnpj_tomador %}({{ nota.cpf_cnpj_tomador }}){% endif %}</p>
+            <p><strong>Serviço:</strong> {{ nota.codigo_servico }} — {{ nota.discriminacao }}</p>
+            <p><strong>Valor serviço:</strong> R$ {{ nota.valor_servico|floatformat:2 }}</p>
+            <p><strong>ISS:</strong> R$ {{ nota.valor_iss|floatformat:2 }} ({{ nota.aliquota_iss }})</p>
+            <p><strong>Líquido:</strong> R$ {{ nota.valor_liquido|floatformat:2 }}</p>
+            {% if nota.numero %}<p><strong>Número NFS-e:</strong> {{ nota.numero }}</p>{% endif %}
+            {% if nota.codigo_verificacao %}<p><strong>Cód. verificação:</strong> {{ nota.codigo_verificacao }}</p>{% endif %}
+            {% if nota.motivo_rejeicao %}<p class="text-danger"><strong>Rejeição:</strong> {{ nota.motivo_rejeicao }}</p>{% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

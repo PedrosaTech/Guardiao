@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block title %}NFC-e {{ nota.numero }}/{{ nota.serie }}{% endblock %}
+{% block page_title %}NFC-e {{ nota.numero }}/{{ nota.serie }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="mb-3">
+        <a href="{% url 'fiscal:lista_nfce' %}" class="btn btn-secondary btn-sm">← Voltar</a>
+        {% if nota.status == 'RASCUNHO' or nota.status == 'REJEITADA' %}
+        <form method="post" action="{% url 'fiscal:autorizar_nfce' nota.id %}" class="d-inline">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-success btn-sm">Autorizar na SEFAZ</button>
+        </form>
+        {% endif %}
+        {% if nota.status == 'AUTORIZADA' %}
+        <a href="{% url 'fiscal:danfe_nfce' nota.id %}" class="btn btn-primary btn-sm" target="_blank">DANFE PDF</a>
+        <a href="{% url 'fiscal:cancelar_nfce' nota.id %}" class="btn btn-danger btn-sm">Cancelar</a>
+        {% endif %}
+    </div>
+
+    <div class="card mb-3">
+        <div class="card-body">
+            <p><strong>Status:</strong> {{ nota.get_status_display }}</p>
+            <p><strong>Loja:</strong> {{ nota.loja.nome }}</p>
+            <p><strong>Modalidade:</strong> {{ nota.get_modalidade_display }}</p>
+            <p><strong>Ambiente:</strong> {{ nota.get_ambiente_display }}</p>
+            {% if nota.nome_consumidor %}<p><strong>Consumidor:</strong> {{ nota.nome_consumidor }} ({{ nota.cpf_consumidor }})</p>{% endif %}
+            <p><strong>Total:</strong> R$ {{ nota.valor_total|floatformat:2 }}</p>
+            {% if nota.chave_acesso %}<p><strong>Chave:</strong> {{ nota.chave_acesso }}</p>{% endif %}
+            {% if nota.protocolo %}<p><strong>Protocolo:</strong> {{ nota.protocolo }}</p>{% endif %}
+            {% if nota.motivo_rejeicao %}<p class="text-danger"><strong>Rejeição:</strong> {{ nota.motivo_rejeicao }}</p>{% endif %}
+        </div>
+    </div>
+
+    <h4>Itens</h4>
+    <table class="table table-sm">
+        <thead><tr><th>Descrição</th><th>Qtd</th><th>Unit.</th><th>Total</th></tr></thead>
+        <tbody>
+            {% for item in nota.itens.all %}
+            {% if item.is_active %}
+            <tr>
+                <td>{{ item.descricao }}</td>
+                <td>{{ item.quantidade }}</td>
+                <td>R$ {{ item.valor_unitario|floatformat:2 }}</td>
+                <td>R$ {{ item.valor_total|floatformat:2 }}</td>
+            </tr>
+            {% endif %}
+            {% empty %}
+            <tr><td colspan="4">Sem itens — adicione via admin ou integração com PDV.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

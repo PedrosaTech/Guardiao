@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>NFS-e {{ nota.numero|default:nota.numero_rps }}</title>
+    <style>
+        body { font-family: Arial, sans-serif; font-size: 12px; margin: 20px; }
+        h1 { font-size: 16px; }
+    </style>
+</head>
+<body>
+    <h1>NFS-e {% if nota.numero %}{{ nota.numero }}{% else %}RPS {{ nota.numero_rps }}{% endif %}</h1>
+    <p><strong>Prestador:</strong> {{ loja.nome }}</p>
+    <p><strong>Tomador:</strong> {{ nota.nome_tomador }}</p>
+    <p><strong>Serviço:</strong> {{ nota.discriminacao }}</p>
+    <p><strong>Valor:</strong> R$ {{ nota.valor_servico|floatformat:2 }}</p>
+    <p><strong>ISS:</strong> R$ {{ nota.valor_iss|floatformat:2 }}</p>
+    {% if nota.codigo_verificacao %}<p><strong>Cód. verificação:</strong> {{ nota.codigo_verificacao }}</p>{% endif %}
+</body>
+</html>

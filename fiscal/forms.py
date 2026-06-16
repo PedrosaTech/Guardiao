@@ -7,7 +7,13 @@ from django.core.exceptions import ValidationError
 from decimal import Decimal
 from datetime import date
 
-from .models import NotaFiscalEntrada, ItemNotaFiscalEntrada, ConfiguracaoFiscalLoja
+from .models import (
+    NotaFiscalEntrada,
+    ItemNotaFiscalEntrada,
+    ConfiguracaoFiscalLoja,
+    NotaFiscalConsumidor,
+    NotaFiscalServico,
+)
 from pessoas.models import Fornecedor
 from core.models import Loja
 from produtos.models import Produto
@@ -248,6 +254,12 @@ class ConfiguracaoFiscalLojaForm(forms.ModelForm):
             "serie_nfce",
             "proximo_numero_nfe",
             "proximo_numero_nfce",
+            "inscricao_municipal",
+            "codigo_cnae",
+            "serie_rps",
+            "proximo_numero_rps",
+            "csc_id",
+            "csc_token",
             "usar_reforma_2026",
             "aliquota_ibs_padrao_2026",
             "aliquota_cbs_padrao_2026",
@@ -276,6 +288,12 @@ class ConfiguracaoFiscalLojaForm(forms.ModelForm):
             "serie_nfce": forms.TextInput(attrs={"class": "form-control", "maxlength": 3, "placeholder": "001"}),
             "proximo_numero_nfe": forms.NumberInput(attrs={"class": "form-control", "min": 1}),
             "proximo_numero_nfce": forms.NumberInput(attrs={"class": "form-control", "min": 1}),
+            "inscricao_municipal": forms.TextInput(attrs={"class": "form-control"}),
+            "codigo_cnae": forms.TextInput(attrs={"class": "form-control", "maxlength": 7}),
+            "serie_rps": forms.TextInput(attrs={"class": "form-control", "maxlength": 5}),
+            "proximo_numero_rps": forms.NumberInput(attrs={"class": "form-control", "min": 1}),
+            "csc_id": forms.TextInput(attrs={"class": "form-control", "maxlength": 6}),
+            "csc_token": forms.TextInput(attrs={"class": "form-control", "maxlength": 36}),
             "usar_reforma_2026": forms.CheckboxInput(attrs={"class": "form-check-input"}),
             "aliquota_ibs_padrao_2026": forms.NumberInput(attrs={"class": "form-control", "step": "0.01"}),
             "aliquota_cbs_padrao_2026": forms.NumberInput(attrs={"class": "form-control", "step": "0.01"}),
@@ -313,3 +331,69 @@ class ConfiguracaoFiscalLojaAdminForm(ConfiguracaoFiscalLojaForm):
 
     class Meta(ConfiguracaoFiscalLojaForm.Meta):
         fields = "__all__"
+
+
+class NotaFiscalConsumidorForm(forms.ModelForm):
+    """Formulário de NFC-e."""
+
+    class Meta:
+        model = NotaFiscalConsumidor
+        fields = [
+            'loja', 'modalidade', 'ambiente',
+            'cpf_consumidor', 'nome_consumidor',
+            'forma_pagamento', 'valor_pago', 'valor_troco', 'valor_desconto',
+        ]
+        widgets = {
+            'loja': forms.Select(attrs={'class': 'form-control'}),
+            'modalidade': forms.Select(attrs={'class': 'form-control'}),
+            'ambiente': forms.Select(attrs={'class': 'form-control'}),
+            'cpf_consumidor': forms.TextInput(attrs={'class': 'form-control'}),
+            'nome_consumidor': forms.TextInput(attrs={'class': 'form-control'}),
+            'forma_pagamento': forms.TextInput(attrs={'class': 'form-control'}),
+            'valor_pago': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'valor_troco': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'valor_desconto': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        empresa = kwargs.pop('empresa', None)
+        super().__init__(*args, **kwargs)
+        qs = Loja.objects.filter(is_active=True)
+        if empresa:
+            qs = qs.filter(empresa=empresa)
+        self.fields['loja'].queryset = qs
+
+
+class NotaFiscalServicoForm(forms.ModelForm):
+    """Formulário de NFS-e."""
+
+    class Meta:
+        model = NotaFiscalServico
+        fields = [
+            'loja', 'nome_tomador', 'cpf_cnpj_tomador', 'email_tomador',
+            'municipio_tomador', 'codigo_servico', 'discriminacao',
+            'municipio_prestacao', 'valor_servico', 'valor_deducoes',
+            'aliquota_iss', 'iss_retido',
+        ]
+        widgets = {
+            'loja': forms.Select(attrs={'class': 'form-control'}),
+            'nome_tomador': forms.TextInput(attrs={'class': 'form-control'}),
+            'cpf_cnpj_tomador': forms.TextInput(attrs={'class': 'form-control'}),
+            'email_tomador': forms.EmailInput(attrs={'class': 'form-control'}),
+            'municipio_tomador': forms.TextInput(attrs={'class': 'form-control', 'maxlength': 7}),
+            'codigo_servico': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '01.01'}),
+            'discriminacao': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
+            'municipio_prestacao': forms.TextInput(attrs={'class': 'form-control', 'maxlength': 7}),
+            'valor_servico': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'valor_deducoes': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'aliquota_iss': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.0001'}),
+            'iss_retido': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        empresa = kwargs.pop('empresa', None)
+        super().__init__(*args, **kwargs)
+        qs = Loja.objects.filter(is_active=True)
+        if empresa:
+            qs = qs.filter(empresa=empresa)
+        self.fields['loja'].queryset = qs

@@ -3,7 +3,17 @@ Admin para modelos fiscais.
 """
 from django.contrib import admin
 from .forms import ConfiguracaoFiscalLojaAdminForm
-from .models import ConfiguracaoFiscalLoja, NotaFiscalSaida, NotaFiscalEntrada, ItemNotaFiscalEntrada, HistoricoEntradaEstoque, AlertaNotaFiscal
+from .models import (
+    ConfiguracaoFiscalLoja,
+    NotaFiscalSaida,
+    NotaFiscalEntrada,
+    ItemNotaFiscalEntrada,
+    HistoricoEntradaEstoque,
+    AlertaNotaFiscal,
+    NotaFiscalConsumidor,
+    ItemNotaFiscalConsumidor,
+    NotaFiscalServico,
+)
 
 
 @admin.register(ConfiguracaoFiscalLoja)
@@ -25,7 +35,13 @@ class ConfiguracaoFiscalLojaAdmin(admin.ModelAdmin):
             'fields': ('certificado_arquivo', 'senha_certificado')
         }),
         ('Configurações de Emissão', {
-            'fields': ('ambiente', 'serie_nfe', 'serie_nfce', 'proximo_numero_nfe', 'proximo_numero_nfce')
+            'fields': (
+                'ambiente', 'serie_nfe', 'serie_nfce', 'proximo_numero_nfe', 'proximo_numero_nfce',
+                'csc_id', 'csc_token',
+            )
+        }),
+        ('NFS-e Nacional', {
+            'fields': ('inscricao_municipal', 'codigo_cnae', 'serie_rps', 'proximo_numero_rps'),
         }),
         ('Reforma Tributária 2026', {
             'fields': ('usar_reforma_2026', 'aliquota_ibs_padrao_2026', 'aliquota_cbs_padrao_2026'),
@@ -118,4 +134,27 @@ class AlertaNotaFiscalAdmin(admin.ModelAdmin):
     list_filter = ['status', 'tipo', 'loja']
     search_fields = ['chave_acesso', 'razao_social_emitente', 'cnpj_emitente']
     readonly_fields = ['data_consulta_sefaz', 'created_at', 'updated_at']
+
+
+class ItemNotaFiscalConsumidorInline(admin.TabularInline):
+    model = ItemNotaFiscalConsumidor
+    extra = 0
+    fields = ['produto', 'descricao', 'quantidade', 'valor_unitario', 'valor_total', 'cfop', 'ncm']
+
+
+@admin.register(NotaFiscalConsumidor)
+class NotaFiscalConsumidorAdmin(admin.ModelAdmin):
+    list_display = ['numero', 'serie', 'loja', 'status', 'valor_total', 'modalidade', 'created_at']
+    list_filter = ['status', 'ambiente', 'modalidade', 'loja']
+    search_fields = ['numero', 'chave_acesso', 'nome_consumidor', 'cpf_consumidor']
+    readonly_fields = ['created_at', 'updated_at', 'created_by', 'updated_by']
+    inlines = [ItemNotaFiscalConsumidorInline]
+
+
+@admin.register(NotaFiscalServico)
+class NotaFiscalServicoAdmin(admin.ModelAdmin):
+    list_display = ['numero_rps', 'numero', 'loja', 'nome_tomador', 'status', 'valor_servico', 'created_at']
+    list_filter = ['status', 'loja']
+    search_fields = ['numero', 'numero_rps', 'nome_tomador', 'cpf_cnpj_tomador']
+    readonly_fields = ['created_at', 'updated_at', 'created_by', 'updated_by']
 

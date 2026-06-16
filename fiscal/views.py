@@ -18,8 +18,21 @@ from django.views.decorators.http import require_http_methods
 from datetime import datetime, timedelta
 from decimal import Decimal
 
-from .models import NotaFiscalSaida, NotaFiscalEntrada, ItemNotaFiscalEntrada, ConfiguracaoFiscalLoja, AlertaNotaFiscal
-from .forms import NotaFiscalEntradaForm, ItemNotaFiscalEntradaFormSet
+from .models import (
+    NotaFiscalSaida,
+    NotaFiscalEntrada,
+    ItemNotaFiscalEntrada,
+    ConfiguracaoFiscalLoja,
+    AlertaNotaFiscal,
+    NotaFiscalConsumidor,
+    NotaFiscalServico,
+)
+from .forms import (
+    NotaFiscalEntradaForm,
+    ItemNotaFiscalEntradaFormSet,
+    NotaFiscalConsumidorForm,
+    NotaFiscalServicoForm,
+)
 from .import_nfe import parse_nfe_xml
 from core.tenant import get_empresa_ativa
 from core.models import Loja
@@ -29,7 +42,7 @@ logger = logging.getLogger(__name__)
 try:
     from weasyprint import HTML
     WEASYPRINT_AVAILABLE = True
-except ImportError:
+except (ImportError, OSError):
     WEASYPRINT_AVAILABLE = False
 
 try:
@@ -1026,5 +1039,265 @@ def imprimir_nfe_pdf(request, nota_id):
     response = HttpResponse(pdf, content_type='application/pdf')
     response['Content-Disposition'] = f'inline; filename="NF-e_{nota.numero}_{nota.serie}.pdf"'
     
+    return response
+
+
+# ---------------------------------------------------------------------------
+# NFC-e (modelo 65)
+# ---------------------------------------------------------------------------
+
+
+def _nfce_queryset(request):
+    empresa = get_empresa_ativa(request)
+    return NotaFiscalConsumidor.objects.filter(
+        is_active=True,
+        loja__empresa=empresa,
+    ).select_related('loja', 'pedido_venda')
+
+
+@login_required
+def lista_nfce(request):
+    notas = _nfce_queryset(request).order_by('-created_at')
+    status_filter = request.GET.get('status')
+    if status_filter:
+        notas = notas.filter(status=status_filter)
+    return render(request, 'fiscal/lista_nfce.html', {
+        'notas': notas,
+        'status_filter': status_filter,
+        'status_choices': NotaFiscalConsumidor.STATUS_CHOICES,
+    })
+
+
+@login_required
+@require_http_methods(['GET', 'POST'])
+def criar_nfce(request):
+    empresa = get_empresa_ativa(request)
+    if request.method == 'POST':
+        form = NotaFiscalConsumidorForm(request.POST, empresa=empresa)
+        if form.is_valid():
+            nfce = form.save(commit=False)
+            nfce.created_by = request.user
+            try:
+                from .numeracao import reservar_numero_nfce
+                numero, serie = reservar_numero_nfce(nfce.loja)
+            except ConfiguracaoFiscalLoja.DoesNotExist:
+                numero, serie = 1, '001'
+            nfce.numero = numero
+            nfce.serie = serie
+            try:
+                config = nfce.loja.configuracao_fiscal
+                nfce.ambiente = config.ambiente
+            except ConfiguracaoFiscalLoja.DoesNotExist:
+                pass
+            nfce.save()
+            messages.success(request, f'NFC-e {nfce.numero}/{nfce.serie} criada em rascunho.')
+            return redirect('fiscal:detalhes_nfce', nota_id=nfce.id)
+    else:
+        form = NotaFiscalConsumidorForm(empresa=empresa)
+    return render(request, 'fiscal/form_nfce.html', {'form': form, 'titulo': 'Nova NFC-e'})
+
+
+@login_required
+def detalhes_nfce(request, nota_id):
+    nfce = get_object_or_404(_nfce_queryset(request), pk=nota_id)
+    return render(request, 'fiscal/detalhes_nfce.html', {'nota': nfce})
+
+
+@login_required
+@require_http_methods(['POST'])
+def autorizar_nfce_view(request, nota_id):
+    if not request.user.is_staff:
+        raise PermissionDenied
+
+    nfce = get_object_or_404(_nfce_queryset(request), pk=nota_id)
+    from .nfce_autorizacao import autorizar_nfce
+
+    try:
+        resultado = autorizar_nfce(nfce)
+        if resultado.get('sucesso'):
+            messages.success(
+                request,
+                f'NFC-e {nfce.numero}/{nfce.serie} autorizada. Protocolo: {nfce.protocolo or "—"}',
+            )
+        else:
+            messages.error(
+                request,
+                f'NFC-e rejeitada (cStat {resultado.get("cStat")}): {resultado.get("xMotivo")}',
+            )
+    except Exception as exc:
+        messages.error(request, f'Erro ao autorizar NFC-e: {exc}')
+        logger.exception('Erro ao autorizar NFC-e %s', nota_id)
+
+    return redirect('fiscal:detalhes_nfce', nota_id=nota_id)
+
+
+@login_required
+@require_http_methods(['GET', 'POST'])
+def cancelar_nfce_view(request, nota_id):
+    if not request.user.is_staff:
+        raise PermissionDenied
+
+    nfce = get_object_or_404(_nfce_queryset(request), pk=nota_id)
+    if request.method == 'POST':
+        justificativa = request.POST.get('justificativa', '').strip()
+        from .nfce_autorizacao import cancelar_nfce
+        try:
+            cancelar_nfce(nfce, justificativa)
+            messages.success(request, 'NFC-e cancelada.')
+            return redirect('fiscal:detalhes_nfce', nota_id=nota_id)
+        except ValueError as exc:
+            messages.error(request, str(exc))
+    return render(request, 'fiscal/cancelar_nfce.html', {'nota': nfce})
+
+
+@login_required
+def imprimir_danfe_nfce(request, nota_id):
+    nfce = get_object_or_404(_nfce_queryset(request), pk=nota_id)
+    if not WEASYPRINT_AVAILABLE:
+        return HttpResponse(
+            '<h1>WeasyPrint não instalado</h1><p>pip install weasyprint</p>',
+            status=500,
+        )
+    context = {
+        'nota': nfce,
+        'loja': nfce.loja,
+        'itens': nfce.itens.filter(is_active=True),
+        'qrcode_b64': _gerar_qrcode_nfe_base64(nfce.chave_acesso or ''),
+    }
+    html_string = render_to_string('fiscal/danfe_nfce.html', context)
+    pdf = HTML(string=html_string).write_pdf()
+    response = HttpResponse(pdf, content_type='application/pdf')
+    response['Content-Disposition'] = f'inline; filename="NFCe_{nfce.numero}_{nfce.serie}.pdf"'
+    return response
+
+
+# ---------------------------------------------------------------------------
+# NFS-e Nacional
+# ---------------------------------------------------------------------------
+
+
+def _nfse_queryset(request):
+    empresa = get_empresa_ativa(request)
+    return NotaFiscalServico.objects.filter(
+        is_active=True,
+        loja__empresa=empresa,
+    ).select_related('loja', 'pedido_venda')
+
+
+@login_required
+def lista_nfse(request):
+    notas = _nfse_queryset(request).order_by('-created_at')
+    status_filter = request.GET.get('status')
+    if status_filter:
+        notas = notas.filter(status=status_filter)
+    return render(request, 'fiscal/lista_nfse.html', {
+        'notas': notas,
+        'status_filter': status_filter,
+        'status_choices': NotaFiscalServico.STATUS_CHOICES,
+    })
+
+
+@login_required
+@require_http_methods(['GET', 'POST'])
+def criar_nfse(request):
+    empresa = get_empresa_ativa(request)
+    if request.method == 'POST':
+        form = NotaFiscalServicoForm(request.POST, empresa=empresa)
+        if form.is_valid():
+            nfse = form.save(commit=False)
+            nfse.created_by = request.user
+            try:
+                from .numeracao import reservar_numero_rps
+                numero_rps, serie_rps = reservar_numero_rps(nfse.loja)
+            except ConfiguracaoFiscalLoja.DoesNotExist:
+                numero_rps, serie_rps = 1, 'RPS'
+            nfse.numero_rps = numero_rps
+            nfse.serie_rps = serie_rps
+            if not nfse.municipio_prestacao:
+                try:
+                    loja = nfse.loja
+                    nfse.municipio_prestacao = (
+                        loja.codigo_ibge_municipio
+                        or loja.empresa.codigo_ibge_municipio
+                        or ''
+                    )
+                except Exception:
+                    pass
+            nfse.save()
+            from .nfse_nacional import calcular_valores_nfse
+            calcular_valores_nfse(nfse)
+            messages.success(request, f'NFS-e RPS {nfse.numero_rps} criada em rascunho.')
+            return redirect('fiscal:detalhes_nfse', nota_id=nfse.id)
+    else:
+        form = NotaFiscalServicoForm(empresa=empresa)
+    return render(request, 'fiscal/form_nfse.html', {'form': form, 'titulo': 'Nova NFS-e'})
+
+
+@login_required
+def detalhes_nfse(request, nota_id):
+    nfse = get_object_or_404(_nfse_queryset(request), pk=nota_id)
+    return render(request, 'fiscal/detalhes_nfse.html', {'nota': nfse})
+
+
+@login_required
+@require_http_methods(['POST'])
+def emitir_nfse_view(request, nota_id):
+    if not request.user.is_staff:
+        raise PermissionDenied
+
+    nfse = get_object_or_404(_nfse_queryset(request), pk=nota_id)
+    try:
+        config = nfse.loja.configuracao_fiscal
+    except ConfiguracaoFiscalLoja.DoesNotExist:
+        messages.error(request, 'Loja sem configuração fiscal.')
+        return redirect('fiscal:detalhes_nfse', nota_id=nota_id)
+
+    from .nfse_nacional import emitir_nfse
+    try:
+        resultado = emitir_nfse(nfse, config)
+        if resultado.get('sucesso'):
+            messages.success(request, f'NFS-e emitida. Número: {resultado.get("numero")}')
+        else:
+            messages.error(request, f'NFS-e rejeitada: {resultado.get("erro", "Erro desconhecido")}')
+    except Exception as exc:
+        messages.error(request, f'Erro ao emitir NFS-e: {exc}')
+        logger.exception('Erro ao emitir NFS-e %s', nota_id)
+
+    return redirect('fiscal:detalhes_nfse', nota_id=nota_id)
+
+
+@login_required
+@require_http_methods(['GET', 'POST'])
+def cancelar_nfse_view(request, nota_id):
+    if not request.user.is_staff:
+        raise PermissionDenied
+
+    nfse = get_object_or_404(_nfse_queryset(request), pk=nota_id)
+    if request.method == 'POST':
+        motivo = request.POST.get('motivo', '').strip()
+        from .nfse_nacional import cancelar_nfse
+        try:
+            cancelar_nfse(nfse, motivo)
+            messages.success(request, 'NFS-e cancelada.')
+            return redirect('fiscal:detalhes_nfse', nota_id=nota_id)
+        except ValueError as exc:
+            messages.error(request, str(exc))
+    return render(request, 'fiscal/cancelar_nfse.html', {'nota': nfse})
+
+
+@login_required
+def imprimir_nfse_pdf(request, nota_id):
+    nfse = get_object_or_404(_nfse_queryset(request), pk=nota_id)
+    if not WEASYPRINT_AVAILABLE:
+        return HttpResponse(
+            '<h1>WeasyPrint não instalado</h1><p>pip install weasyprint</p>',
+            status=500,
+        )
+    context = {'nota': nfse, 'loja': nfse.loja}
+    html_string = render_to_string('fiscal/nfse_pdf.html', context)
+    pdf = HTML(string=html_string).write_pdf()
+    response = HttpResponse(pdf, content_type='application/pdf')
+    num = nfse.numero or nfse.numero_rps
+    response['Content-Disposition'] = f'inline; filename="NFSe_{num}.pdf"'
     return response
 

@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block title %}NFS-e - Guardião{% endblock %}
+{% block page_title %}NFS-e Nacional{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Notas Fiscais de Serviço</h2>
+        <a href="{% url 'fiscal:criar_nfse' %}" class="btn btn-primary">+ Nova NFS-e</a>
+    </div>
+
+    <form method="get" class="row g-2 mb-3">
+        <div class="col-auto">
+            <select name="status" class="form-select" onchange="this.form.submit()">
+                <option value="">Todos os status</option>
+                {% for val, label in status_choices %}
+                <option value="{{ val }}" {% if status_filter == val %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </form>
+
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>RPS</th>
+                    <th>NFS-e</th>
+                    <th>Tomador</th>
+                    <th>Status</th>
+                    <th>Valor</th>
+                    <th>Data</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for nota in notas %}
+                <tr>
+                    <td>{{ nota.numero_rps }}/{{ nota.serie_rps }}</td>
+                    <td>{{ nota.numero|default:"—" }}</td>
+                    <td>{{ nota.nome_tomador }}</td>
+                    <td>{{ nota.get_status_display }}</td>
+                    <td>R$ {{ nota.valor_servico|floatformat:2 }}</td>
+                    <td>{{ nota.created_at|date:"d/m/Y H:i" }}</td>
+                    <td><a href="{% url 'fiscal:detalhes_nfse' nota.id %}">Detalhes</a></td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7">Nenhuma NFS-e cadastrada.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -34,5 +34,21 @@ urlpatterns = [
     
     # PDF
     path('nfe/<int:nota_id>/pdf/', views.imprimir_nfe_pdf, name='imprimir_nfe_pdf'),
+
+    # NFC-e
+    path('nfce/', views.lista_nfce, name='lista_nfce'),
+    path('nfce/nova/', views.criar_nfce, name='criar_nfce'),
+    path('nfce/<int:nota_id>/', views.detalhes_nfce, name='detalhes_nfce'),
+    path('nfce/<int:nota_id>/autorizar/', views.autorizar_nfce_view, name='autorizar_nfce'),
+    path('nfce/<int:nota_id>/cancelar/', views.cancelar_nfce_view, name='cancelar_nfce'),
+    path('nfce/<int:nota_id>/danfe/', views.imprimir_danfe_nfce, name='danfe_nfce'),
+
+    # NFS-e
+    path('nfse/', views.lista_nfse, name='lista_nfse'),
+    path('nfse/nova/', views.criar_nfse, name='criar_nfse'),
+    path('nfse/<int:nota_id>/', views.detalhes_nfse, name='detalhes_nfse'),
+    path('nfse/<int:nota_id>/emitir/', views.emitir_nfse_view, name='emitir_nfse'),
+    path('nfse/<int:nota_id>/cancelar/', views.cancelar_nfse_view, name='cancelar_nfse'),
+    path('nfse/<int:nota_id>/pdf/', views.imprimir_nfse_pdf, name='imprimir_nfse_pdf'),
 ]
 

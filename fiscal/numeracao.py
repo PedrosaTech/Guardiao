@@ -59,3 +59,27 @@ def reservar_numero_nfce(loja):
         config.save(update_fields=['proximo_numero_nfce', 'updated_at'])
 
     return numero, serie
+
+
+def reservar_numero_rps(loja):
+    """
+    Reserva o próximo número de RPS da loja e incrementa o contador.
+
+    Returns:
+        tuple[int, str]: (numero_rps, serie_rps)
+    """
+    from .models import ConfiguracaoFiscalLoja
+
+    with transaction.atomic():
+        config = (
+            ConfiguracaoFiscalLoja.objects.select_for_update().get(
+                loja=loja,
+                is_active=True,
+            )
+        )
+        numero = config.proximo_numero_rps
+        serie = config.serie_rps
+        config.proximo_numero_rps = numero + 1
+        config.save(update_fields=['proximo_numero_rps', 'updated_at'])
+
+    return numero, serie

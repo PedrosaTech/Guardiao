@@ -50,6 +50,16 @@ class ConfiguracaoFiscalLoja(BaseModel):
     serie_nfce = models.CharField('Série NFC-e', max_length=3, default='001')
     proximo_numero_nfe = models.IntegerField('Próximo Número NF-e', default=1)
     proximo_numero_nfce = models.IntegerField('Próximo Número NFC-e', default=1)
+
+    # NFS-e Nacional
+    inscricao_municipal = models.CharField('Inscrição Municipal', max_length=20, blank=True)
+    codigo_cnae = models.CharField('CNAE Principal', max_length=7, blank=True)
+    serie_rps = models.CharField('Série RPS', max_length=5, default='RPS')
+    proximo_numero_rps = models.IntegerField('Próximo Número RPS', default=1)
+
+    # NFC-e (CSC para QR Code)
+    csc_id = models.CharField('CSC ID (NFC-e)', max_length=6, blank=True)
+    csc_token = models.CharField('CSC Token (NFC-e)', max_length=36, blank=True)
     
     # ═══════════════════════════════════════════════════════════
     # REFORMA TRIBUTÁRIA 2026
@@ -388,6 +398,261 @@ class NotaFiscalSaida(BaseModel):
     
     def __str__(self):
         return f"{self.tipo_documento} {self.numero}/{self.serie} - {self.cliente.nome_razao_social}"
+
+
+class NotaFiscalConsumidor(BaseModel):
+    """NFC-e modelo 65 — venda ao consumidor final."""
+
+    AMBIENTE_CHOICES = [
+        ('HOMOLOGACAO', 'Homologação'),
+        ('PRODUCAO', 'Produção'),
+    ]
+    STATUS_CHOICES = [
+        ('RASCUNHO', 'Rascunho'),
+        ('EM_PROCESSAMENTO', 'Em Processamento'),
+        ('AUTORIZADA', 'Autorizada'),
+        ('CANCELADA', 'Cancelada'),
+        ('REJEITADA', 'Rejeitada'),
+    ]
+    MODALIDADE_CHOICES = [
+        ('PRESENCIAL', 'Presencial'),
+        ('ONLINE', 'Online / E-commerce'),
+        ('DELIVERY', 'Delivery'),
+    ]
+
+    loja = models.ForeignKey(
+        Loja,
+        on_delete=models.PROTECT,
+        related_name='notas_fiscais_consumidor',
+        verbose_name='Loja',
+    )
+    numero = models.IntegerField('Número')
+    serie = models.CharField('Série', max_length=3, default='001')
+    chave_acesso = models.CharField('Chave de Acesso', max_length=44, blank=True)
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='RASCUNHO',
+        verbose_name='Status',
+    )
+    ambiente = models.CharField(
+        max_length=20,
+        choices=AMBIENTE_CHOICES,
+        default='HOMOLOGACAO',
+        verbose_name='Ambiente',
+    )
+    modalidade = models.CharField(
+        max_length=20,
+        choices=MODALIDADE_CHOICES,
+        default='PRESENCIAL',
+        verbose_name='Modalidade',
+    )
+
+    cpf_consumidor = models.CharField('CPF do Consumidor', max_length=14, blank=True)
+    nome_consumidor = models.CharField('Nome do Consumidor', max_length=60, blank=True)
+
+    valor_produtos = models.DecimalField(
+        max_digits=15,
+        decimal_places=2,
+        default=Decimal('0.00'),
+        verbose_name='Valor dos Produtos',
+    )
+    valor_desconto = models.DecimalField(
+        max_digits=15,
+        decimal_places=2,
+        default=Decimal('0.00'),
+        verbose_name='Valor do Desconto',
+    )
+    valor_total = models.DecimalField(
+        max_digits=15,
+        decimal_places=2,
+        default=Decimal('0.00'),
+        verbose_name='Valor Total',
+    )
+    valor_icms = models.DecimalField(
+        max_digits=15,
+        decimal_places=2,
+        default=Decimal('0.00'),
+        verbose_name='Valor ICMS',
+    )
+
+    forma_pagamento = models.CharField(
+        'Forma de Pagamento',
+        max_length=20,
+        default='01',
+        help_text='01=Dinheiro, 03=Cartão, etc.',
+    )
+    valor_pago = models.DecimalField(
+        max_digits=15,
+        decimal_places=2,
+        default=Decimal('0.00'),
+        verbose_name='Valor Pago',
+    )
+    valor_troco = models.DecimalField(
+        max_digits=15,
+        decimal_places=2,
+        default=Decimal('0.00'),
+        verbose_name='Valor Troco',
+    )
+
+    xml_enviado = models.TextField('XML Enviado', blank=True)
+    xml_retorno = models.TextField('XML Retorno', blank=True)
+    protocolo = models.CharField('Protocolo', max_length=50, blank=True)
+    data_autorizacao = models.DateTimeField(null=True, blank=True, verbose_name='Data de Autorização')
+    motivo_rejeicao = models.TextField('Motivo da Rejeição', blank=True)
+
+    pedido_venda = models.OneToOneField(
+        'vendas.PedidoVenda',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='nfce',
+        verbose_name='Pedido de Venda',
+    )
+
+    class Meta:
+        unique_together = [['loja', 'serie', 'numero']]
+        ordering = ['-created_at']
+        verbose_name = 'NFC-e'
+        verbose_name_plural = 'NFC-e'
+        indexes = [
+            models.Index(fields=['loja', 'status']),
+            models.Index(fields=['chave_acesso']),
+        ]
+
+    def __str__(self):
+        return f'NFC-e {self.numero}/{self.serie} - {self.loja.nome}'
+
+
+class ItemNotaFiscalConsumidor(BaseModel):
+    """Item de uma NFC-e."""
+
+    nota = models.ForeignKey(
+        NotaFiscalConsumidor,
+        on_delete=models.CASCADE,
+        related_name='itens',
+        verbose_name='NFC-e',
+    )
+    produto = models.ForeignKey(
+        Produto,
+        on_delete=models.PROTECT,
+        related_name='itens_nfce',
+        verbose_name='Produto',
+    )
+    descricao = models.CharField(max_length=120)
+    quantidade = models.DecimalField(max_digits=15, decimal_places=4)
+    valor_unitario = models.DecimalField(max_digits=15, decimal_places=4)
+    valor_total = models.DecimalField(max_digits=15, decimal_places=2)
+    cfop = models.CharField(max_length=4, default='5102')
+    ncm = models.CharField(max_length=8, blank=True)
+    cst_icms = models.CharField(max_length=3, default='400')
+    aliquota_icms = models.DecimalField(max_digits=5, decimal_places=2, default=Decimal('0.00'))
+    valor_icms = models.DecimalField(max_digits=15, decimal_places=2, default=Decimal('0.00'))
+
+    class Meta:
+        verbose_name = 'Item NFC-e'
+        verbose_name_plural = 'Itens NFC-e'
+        ordering = ['nota', 'id']
+
+    def __str__(self):
+        return f'{self.descricao[:50]} - {self.valor_total}'
+
+
+class NotaFiscalServico(BaseModel):
+    """NFS-e Nacional — prestação de serviços via API nfse.gov.br."""
+
+    STATUS_CHOICES = [
+        ('RASCUNHO', 'Rascunho'),
+        ('ENVIADA', 'Enviada'),
+        ('AUTORIZADA', 'Autorizada'),
+        ('CANCELADA', 'Cancelada'),
+        ('REJEITADA', 'Rejeitada'),
+    ]
+
+    loja = models.ForeignKey(
+        Loja,
+        on_delete=models.PROTECT,
+        related_name='notas_fiscais_servico',
+        verbose_name='Loja',
+    )
+    numero = models.IntegerField('Número', blank=True, null=True)
+    numero_rps = models.IntegerField('Número RPS')
+    serie_rps = models.CharField('Série RPS', max_length=5, default='RPS')
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='RASCUNHO',
+        verbose_name='Status',
+    )
+
+    cpf_cnpj_tomador = models.CharField('CPF/CNPJ Tomador', max_length=18, blank=True)
+    nome_tomador = models.CharField('Nome Tomador', max_length=115)
+    email_tomador = models.CharField('E-mail Tomador', max_length=80, blank=True)
+    municipio_tomador = models.CharField(
+        'Município Tomador (IBGE)',
+        max_length=7,
+        blank=True,
+    )
+
+    codigo_servico = models.CharField('Código LC 116/2003', max_length=5)
+    discriminacao = models.TextField('Descrição do Serviço')
+    municipio_prestacao = models.CharField('Município de Prestação (IBGE)', max_length=7)
+
+    valor_servico = models.DecimalField(max_digits=15, decimal_places=2)
+    valor_deducoes = models.DecimalField(
+        max_digits=15,
+        decimal_places=2,
+        default=Decimal('0.00'),
+        verbose_name='Valor Deduções',
+    )
+    valor_iss = models.DecimalField(
+        max_digits=15,
+        decimal_places=2,
+        default=Decimal('0.00'),
+        verbose_name='Valor ISS',
+    )
+    aliquota_iss = models.DecimalField(
+        max_digits=5,
+        decimal_places=4,
+        default=Decimal('0.0500'),
+        verbose_name='Alíquota ISS',
+    )
+    iss_retido = models.BooleanField('ISS Retido', default=False)
+    valor_liquido = models.DecimalField(
+        max_digits=15,
+        decimal_places=2,
+        default=Decimal('0.00'),
+        verbose_name='Valor Líquido',
+    )
+
+    codigo_verificacao = models.CharField('Código Verificação', max_length=9, blank=True)
+    link_nfse = models.URLField('Link NFS-e', blank=True)
+    xml_enviado = models.TextField('XML/Payload Enviado', blank=True)
+    xml_retorno = models.TextField('XML/JSON Retorno', blank=True)
+    data_emissao = models.DateTimeField(null=True, blank=True, verbose_name='Data de Emissão')
+    motivo_rejeicao = models.TextField('Motivo da Rejeição', blank=True)
+
+    pedido_venda = models.ForeignKey(
+        'vendas.PedidoVenda',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='nfse',
+        verbose_name='Pedido de Venda',
+    )
+
+    class Meta:
+        unique_together = [['loja', 'serie_rps', 'numero_rps']]
+        ordering = ['-created_at']
+        verbose_name = 'NFS-e'
+        verbose_name_plural = 'NFS-e'
+        indexes = [
+            models.Index(fields=['loja', 'status']),
+        ]
+
+    def __str__(self):
+        num = self.numero or self.numero_rps
+        return f'NFS-e {num} - {self.nome_tomador[:40]}'
 
 
 class NotaFiscalEntrada(BaseModel):
