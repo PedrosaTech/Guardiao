@@ -21,8 +21,8 @@ class TestMovimentacaoEstoque:
     def test_movimentacao_estoque_entrada(self):
         """Testa entrada de estoque."""
         empresa = Empresa.objects.create(
-            nome_fantasia='Guardião Aladin',
-            razao_social='Guardião Aladin Ltda',
+            nome_fantasia='Guardião',
+            razao_social='Guardião Ltda',
             cnpj='12345678000190',
         )
         loja = Loja.objects.create(

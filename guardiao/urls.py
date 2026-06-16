@@ -1,5 +1,5 @@
 """
-URL configuration for guardiao_aladin project.
+URL configuration for guardiao project.
 
 TODO: Futuramente a API será versionada (v1, v2, etc.)
 """

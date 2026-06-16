@@ -1,6 +1,6 @@
 # Manual de Cadastro - Empresa, Loja e Produtos
 
-Este guia foi feito para usuarios administrativos do Guardiao Aladin que precisam iniciar o sistema em producao.
+Este guia foi feito para usuarios administrativos do Guardiao que precisam iniciar o sistema em producao.
 
 ## 1) Acesso necessario
 

@@ -57,7 +57,7 @@ O módulo PDV foi completamente refatorado e melhorado para suportar vendas de b
 ### 6. **templates/pdv/erro.html** (NOVO)
 - Template para exibir erros do PDV
 
-### 7. **guardiao_aladin/urls.py** (MODIFICADO)
+### 7. **guardiao/urls.py** (MODIFICADO)
 - Adicionada rota: `/api/v1/pdv/produtos/`
 
 ## 🎯 Funcionalidades Implementadas

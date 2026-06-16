@@ -87,19 +87,19 @@ class TestEmpresa:
     def test_criar_empresa(self):
         """Testa criação de empresa."""
         empresa = Empresa.objects.create(
-            nome_fantasia='Guardião Aladin',
-            razao_social='Guardião Aladin Ltda',
+            nome_fantasia='Guardião',
+            razao_social='Guardião Ltda',
             cnpj='12345678000190',
         )
         assert empresa.id is not None
-        assert empresa.nome_fantasia == 'Guardião Aladin'
+        assert empresa.nome_fantasia == 'Guardião'
         assert empresa.is_active is True
     
     def test_criar_loja(self):
         """Testa criação de loja."""
         empresa = Empresa.objects.create(
-            nome_fantasia='Guardião Aladin',
-            razao_social='Guardião Aladin Ltda',
+            nome_fantasia='Guardião',
+            razao_social='Guardião Ltda',
             cnpj='12345678000190',
         )
         loja = Loja.objects.create(

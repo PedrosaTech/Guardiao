@@ -28,7 +28,7 @@
 
 ### Arquivos Modificados
 - `requirements.txt` - Adicionado weasyprint
-- `guardiao_aladin/urls.py` - Incluído fiscal.urls
+- `guardiao/urls.py` - Incluído fiscal.urls
 - `fiscal/admin.py` - Adicionado botão de impressão
 
 ## 🔧 Instalação

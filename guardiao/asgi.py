@@ -1,5 +1,5 @@
 """
-ASGI config for guardiao_aladin project.
+ASGI config for guardiao project.
 
 It exposes the ASGI callable as a module-level variable named ``application``.
 
@@ -11,7 +11,7 @@ import os
 
 from django.core.asgi import get_asgi_application
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'guardiao_aladin.settings.prod')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'guardiao.settings.prod')
 
 application = get_asgi_application()
 

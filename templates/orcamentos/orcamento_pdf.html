@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Orçamento #{{ orcamento.id }} - Guardião Aladin</title>
+    <title>Orçamento #{{ orcamento.id }} - Guardião</title>
     <style>
         @page {
             size: A4;
@@ -196,7 +196,7 @@
     <div class="header">
         <div class="header-top">
             <div class="empresa-info">
-                <h1>🛡️ Guardião Aladin</h1>
+                <h1>🛡️ Guardião</h1>
                 <p><strong>Empresa:</strong> {{ empresa.nome_fantasia }}</p>
                 <p><strong>CNPJ:</strong> {{ empresa.cnpj|default:"-" }}</p>
                 {% if empresa.inscricao_estadual %}
@@ -331,7 +331,7 @@
     </div>
 
     <div class="footer">
-        <p><strong>Guardião Aladin - ERP Pirotecnia</strong></p>
+        <p><strong>Guardião - ERP Pirotecnia</strong></p>
         <p>Orçamento gerado em {{ orcamento.data_emissao|date:"d/m/Y H:i" }} | Loja: {{ loja.nome }}</p>
         {% if orcamento.pedido_gerado %}
         <p style="color: #9b59b6; font-weight: bold; margin-top: 10px;">

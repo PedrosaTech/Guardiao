@@ -1,5 +1,5 @@
 """
-Configurações base do projeto Guardião Aladin.
+Configurações base do projeto Guardião.
 """
 import os
 from pathlib import Path
@@ -59,7 +59,7 @@ MIDDLEWARE = [
     'core.middleware.EmpresaAtivaMiddleware',
 ]
 
-ROOT_URLCONF = 'guardiao_aladin.urls'
+ROOT_URLCONF = 'guardiao.urls'
 
 TEMPLATES = [
     {
@@ -78,7 +78,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'guardiao_aladin.wsgi.application'
+WSGI_APPLICATION = 'guardiao.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases

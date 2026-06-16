@@ -1,23 +1,23 @@
-# Render Blueprint: Guardião Aladin (Django + PostgreSQL)
+# Render Blueprint: Guardião (Django + PostgreSQL)
 # https://docs.render.com/blueprint-spec
 
 databases:
-  - name: guardiao-aladin-db
+  - name: guardiao-guardiao-db
     plan: free
 
 services:
   - type: web
-    name: guardiao-aladin
+    name: guardiao-guardiao
     runtime: python
     plan: free
 
     buildCommand: pip install -r requirements.txt && python manage.py collectstatic --no-input
-    startCommand: python manage.py migrate --no-input && python manage.py load_initial_data && gunicorn guardiao_aladin.wsgi:application
+    startCommand: python manage.py migrate --no-input && python manage.py load_initial_data && gunicorn guardiao.wsgi:application
 
     envVars:
       - key: DATABASE_URL
         fromDatabase:
-          name: guardiao-aladin-db
+          name: guardiao-guardiao-db
           property: connectionString
       - key: SECRET_KEY
         generateValue: true
@@ -28,6 +28,6 @@ services:
       - key: ENCRYPTION_KEY
         generateValue: true
       - key: DJANGO_SETTINGS_MODULE
-        value: guardiao_aladin.settings.prod
+        value: guardiao.settings.prod
       - key: CSRF_TRUSTED_ORIGINS
-        value: "https://guardiao-aladin.onrender.com"
+        value: "https://guardiao-guardiao.onrender.com"

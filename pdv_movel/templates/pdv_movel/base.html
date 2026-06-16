@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <meta name="theme-color" content="#2980b9">
     <link rel="manifest" href="{% static 'pdv_movel/manifest.json' %}">
-    <title>{% block title %}PDV Móvel - Guardião Aladin{% endblock %}</title>
+    <title>{% block title %}PDV Móvel - Guardião{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'pdv_movel/css/base.css' %}">
     <link rel="stylesheet" href="{% static 'pdv_movel/css/components.css' %}">
     <link rel="stylesheet" href="{% static 'pdv_movel/css/tablet.css' %}">
@@ -21,7 +21,7 @@
     {% if user.is_authenticated %}
     <header class="header">
         <div class="header-left">
-            <span class="logo">🎆 Guardião Aladin</span>
+            <span class="logo">🎆 Guardião</span>
             {% if atendente %}
             <span class="atendente-info">{{ atendente.user.get_full_name|default:atendente.user.username }}</span>
             {% endif %}

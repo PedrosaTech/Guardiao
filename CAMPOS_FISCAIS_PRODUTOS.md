@@ -1,4 +1,4 @@
-# 📋 Campos Fiscais dos Produtos - Guardião Aladin
+# 📋 Campos Fiscais dos Produtos - Guardião
 
 ## ✅ Campos Implementados
 

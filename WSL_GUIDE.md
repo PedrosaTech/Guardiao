@@ -1,4 +1,4 @@
-# Guia WSL - Guardião Aladin
+# Guia WSL - Guardião
 
 ## 🐧 Como entrar no WSL com venv ativado
 
@@ -10,20 +10,20 @@ wsl bash entrar_wsl.sh
 ### Opção 2: Manualmente
 ```bash
 wsl
-cd /mnt/c/Users/Dell/Guardiao_Aladin
+cd /mnt/c/Users/Dell/Guardiao_Guardiao
 source venv/bin/activate
 ```
 
 ### Opção 3: Comando único
 ```bash
-wsl bash -c "cd /mnt/c/Users/Dell/Guardiao_Aladin && source venv/bin/activate && bash"
+wsl bash -c "cd /mnt/c/Users/Dell/Guardiao_Guardiao && source venv/bin/activate && bash"
 ```
 
 ## ✅ Verificação
 
 Após entrar, você deve ver:
 ```
-(venv) usuario@hostname:/mnt/c/Users/Dell/Guardiao_Aladin$
+(venv) usuario@hostname:/mnt/c/Users/Dell/Guardiao_Guardiao$
 ```
 
 ## 🚀 Comandos Úteis no WSL
@@ -71,8 +71,8 @@ python manage.py shell
 
 ## 📝 Notas
 
-- O venv está em `/mnt/c/Users/Dell/Guardiao_Aladin/venv`
-- O projeto está em `/mnt/c/Users/Dell/Guardiao_Aladin`
+- O venv está em `/mnt/c/Users/Dell/Guardiao_Guardiao/venv`
+- O projeto está em `/mnt/c/Users/Dell/Guardiao_Guardiao`
 - O banco SQLite será criado no mesmo diretório (`db.sqlite3`)
 - Para usar PostgreSQL, configure `DATABASE_URL` no `.env`
 
@@ -95,6 +95,6 @@ chmod +x entrar_wsl.sh
 ### Verificar Python no venv:
 ```bash
 which python
-# Deve mostrar: /mnt/c/Users/Dell/Guardiao_Aladin/venv/bin/python
+# Deve mostrar: /mnt/c/Users/Dell/Guardiao_Guardiao/venv/bin/python
 ```
 

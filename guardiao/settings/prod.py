@@ -47,7 +47,7 @@ LOGGING = {
             'level': 'INFO',
             'propagate': False,
         },
-        'guardiao_aladin': {
+        'guardiao': {
             'handlers': ['console'],
             'level': 'INFO',
             'propagate': False,

@@ -1,4 +1,4 @@
-# Guardião Aladin - ERP para Pirotecnia
+# Guardião - ERP para Pirotecnia
 
 Sistema ERP especializado para empresas de venda de fogos de artifício na Bahia.
 
@@ -120,7 +120,7 @@ python manage.py dumpdata --natural-foreign --natural-primary -e contenttypes -e
 O Blueprint já define: `DATABASE_URL`, `SECRET_KEY`, `DEBUG`, `ALLOWED_HOSTS`, `ENCRYPTION_KEY`, `DJANGO_SETTINGS_MODULE`, `CSRF_TRUSTED_ORIGINS`. Para domínio próprio, adicione em **Environment** no Dashboard:
 
 - `ALLOWED_HOSTS`: ex. `seu-dominio.com,.onrender.com`
-- `CSRF_TRUSTED_ORIGINS`: ex. `https://seu-dominio.com,https://guardiao-aladin.onrender.com`
+- `CSRF_TRUSTED_ORIGINS`: ex. `https://seu-dominio.com,https://guardiao-guardiao.onrender.com`
 
 ### Mídia (/media)
 
@@ -155,5 +155,5 @@ pytest
 
 ## Licença
 
-Proprietário - Guardião Aladin
+Proprietário - Guardião
 

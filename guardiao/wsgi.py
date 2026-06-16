@@ -1,5 +1,5 @@
 """
-WSGI config for guardiao_aladin project.
+WSGI config for guardiao project.
 
 It exposes the WSGI callable as a module-level variable named ``application``.
 
@@ -11,7 +11,7 @@ import os
 
 from django.core.wsgi import get_wsgi_application
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'guardiao_aladin.settings.prod')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'guardiao.settings.prod')
 
 application = get_wsgi_application()
 

@@ -1,4 +1,4 @@
-# Guia Rápido - Guardião Aladin
+# Guia Rápido - Guardião
 
 ## ✅ Status do Projeto
 
@@ -114,7 +114,7 @@ python manage.py shell
 ## 📚 Estrutura de Apps
 
 ```
-guardiao_aladin/
+guardiao/
 ├── core/           # Base, auditoria, LGPD
 ├── pessoas/        # Clientes e Fornecedores
 ├── produtos/       # Produtos e Categorias

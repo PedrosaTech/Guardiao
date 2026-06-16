@@ -43,7 +43,7 @@ path('guardiao/eventos/<int:pk>/gerar-nfe/', views.gerar_nfe_evento_view, name='
 - `/eventos/guardiao/eventos/<pk>/gerar-pedido/`
 - `/eventos/guardiao/eventos/<pk>/gerar-nfe/`
 
-**Nota:** O prefixo `/eventos/` vem do include em `guardiao_aladin/urls.py`:
+**Nota:** O prefixo `/eventos/` vem do include em `guardiao/urls.py`:
 ```python
 path('eventos/', include('eventos.urls')),
 ```
