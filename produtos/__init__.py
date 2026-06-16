@@ -1,2 +1,1 @@
-# Produtos app - Fogos de Artifício
-
+# Produtos app

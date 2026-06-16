@@ -1,5 +1,5 @@
 """
-Modelos de Produtos - Fogos de Artifício.
+Modelos de Produtos.
 """
 from django.db import models
 from django.db import transaction
@@ -68,12 +68,7 @@ class Produto(BaseModel):
     """
 
     CLASSE_RISCO_CHOICES = [
-        ('1.1G', '1.1G – Explosivo com risco de explosão em massa'),
-        ('1.2G', '1.2G – Explosivo com risco de projeção'),
-        ('1.3G', '1.3G – Explosivo com risco de fogo intenso/projeção'),
-        ('1.4G', '1.4G – Explosivo com baixo risco (uso comum / varejo)'),
-        ('1.4S', '1.4S – Explosivo com risco muito reduzido'),
-        ('OUTRA', 'OUTRA / NÃO APLICÁVEL (para itens não-explosivos, acessórios, suportes, etc.)'),
+        ('OUTRA', 'Não Aplicável'),
     ]
 
     categoria = models.ForeignKey(
@@ -92,7 +87,8 @@ class Produto(BaseModel):
         'Classe de Risco',
         max_length=10,
         choices=CLASSE_RISCO_CHOICES,
-        help_text='Classificação de risco do produto conforme normas de transporte e armazenamento',
+        default='OUTRA',
+        help_text='Classificação de risco do produto (quando aplicável)',
     )
     subclasse_risco = models.CharField('Subclasse de Risco', max_length=10, blank=True, null=True)
     possui_restricao_exercito = models.BooleanField('Possui Restrição de Exército', default=False)

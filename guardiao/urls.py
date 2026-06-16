@@ -20,7 +20,6 @@ from pdv.views_api import (
     CaixaSessaoViewSet,
     PagamentoViewSet,
     buscar_produtos_pdv,
-    validar_comprador_pirotecnia,
     buscar_pedido_tablet,
     efetivar_pedido_tablet_view,
     verificar_caixa_aberto,
@@ -70,7 +69,6 @@ urlpatterns = [
     # TODO: Adicionar rotas de autenticação da API
     path('api/v1/auth/', include('rest_framework.urls')),
     path('api/v1/pdv/produtos/', buscar_produtos_pdv, name='api-pdv-produtos'),
-    path('api/v1/pdv/validar-comprador/', validar_comprador_pirotecnia, name='api-validar-comprador'),
     path('pdv/api/buscar-pedido-tablet/', buscar_pedido_tablet),
     path('pdv/api/efetivar-pedido-tablet/', efetivar_pedido_tablet_view),
     path('pdv/api/verificar-caixa/', verificar_caixa_aberto),

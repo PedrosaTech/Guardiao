@@ -58,15 +58,11 @@
             </div>
         </div>
         <div class="card mb-3">
-            <div class="card-header"><strong>Pirotecnia</strong></div>
+            <div class="card-header"><strong>Controle de Lote</strong></div>
             <div class="card-body">
                 <div class="row g-2">
-                    <div class="col-md-2">{{ form.classe_risco.label_tag }}{{ form.classe_risco }}{{ form.classe_risco.errors }}</div>
-                    <div class="col-md-2">{{ form.subclasse_risco.label_tag }}{{ form.subclasse_risco }}</div>
-                    <div class="col-md-2">{{ form.numero_lote.label_tag }}{{ form.numero_lote }}</div>
-                    <div class="col-md-2">{{ form.validade.label_tag }}{{ form.validade }}</div>
-                    <div class="col-md-2">{{ form.numero_certificado_exercito.label_tag }}{{ form.numero_certificado_exercito }}</div>
-                    <div class="col-md-2 form-check mt-4">{{ form.possui_restricao_exercito }}{{ form.possui_restricao_exercito.label_tag }}</div>
+                    <div class="col-md-3">{{ form.numero_lote.label_tag }}{{ form.numero_lote }}</div>
+                    <div class="col-md-3">{{ form.validade.label_tag }}{{ form.validade }}</div>
                 </div>
                 <div class="mt-2">{{ form.condicoes_armazenamento.label_tag }}{{ form.condicoes_armazenamento }}</div>
             </div>

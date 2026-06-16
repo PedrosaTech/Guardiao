@@ -28,8 +28,7 @@ from pessoas.models import Cliente
 from vendas.models import CondicaoPagamento
 from vendas.models import PedidoVenda
 from vendas.services import criar_pedido_venda_balcao
-from .models import CaixaSessao, Pagamento, CompradorPirotecnia, RegistroVendaPirotecnia
-from .validators import validar_cpf, formatar_cpf, calcular_idade, validar_idade_minima
+from .models import CaixaSessao, Pagamento
 
 logger = logging.getLogger(__name__)
 
@@ -481,9 +480,8 @@ def finalizar_venda(request):
             except Exception:
                 logger.warning(f"Local de estoque {local_estoque_id} não encontrado, usando padrão")
 
-        # Valida itens e verifica produtos com restrição
+        # Valida itens
         itens_validos = []
-        produtos_com_restricao = []
 
         for item in itens:
             produto_id = item.get('produto_id')
@@ -504,86 +502,12 @@ def finalizar_venda(request):
             if not produto:
                 return JsonResponse({'erro': f'Produto {produto_id} não encontrado'}, status=404)
 
-            # Verifica se produto tem restrição
-            if produto.possui_restricao_exercito:
-                produtos_com_restricao.append({
-                    'produto_id': produto_id,
-                    'produto_nome': produto.descricao,
-                    'quantidade': quantidade,
-                })
-            
             itens_validos.append({
                 'produto_id': produto_id,
                 'quantidade': Decimal(str(quantidade)),
                 'preco_unitario': item.get('preco_unitario'),  # Opcional
                 'desconto': item.get('desconto', 0),
             })
-        
-        # Se houver produtos com restrição, exige dados do comprador
-        comprador_pirotecnia = None
-        if produtos_com_restricao:
-            comprador_data = data.get('comprador_pirotecnia')
-            if not comprador_data:
-                return JsonResponse({
-                    'erro': 'Produtos com restrição de Exército exigem dados do comprador',
-                    'produtos_restricao': produtos_com_restricao,
-                    'requer_validacao': True
-                }, status=400)
-            
-            # Valida dados do comprador
-            try:
-                # Valida CPF
-                cpf_limpo = validar_cpf(comprador_data.get('cpf'))
-                cpf_formatado = formatar_cpf(cpf_limpo)
-                
-                # Valida idade
-                from datetime import datetime
-                data_nascimento = datetime.strptime(comprador_data.get('data_nascimento'), '%Y-%m-%d').date()
-                validar_idade_minima(data_nascimento, idade_minima=18)
-                
-                # Obtém IP do cliente
-                ip_cliente = request.META.get('REMOTE_ADDR', '')
-                if not ip_cliente:
-                    ip_cliente = request.META.get('HTTP_X_FORWARDED_FOR', '').split(',')[0].strip()
-                
-                # Cria ou busca comprador
-                comprador_pirotecnia, created = CompradorPirotecnia.objects.get_or_create(
-                    cpf=cpf_formatado,
-                    defaults={
-                        'nome_completo': comprador_data.get('nome_completo'),
-                        'data_nascimento': data_nascimento,
-                        'telefone': comprador_data.get('telefone', ''),
-                        'email': comprador_data.get('email', ''),
-                        'tipo_documento': comprador_data.get('tipo_documento', 'RG'),
-                        'numero_documento': comprador_data.get('numero_documento', ''),
-                        'orgao_emissor': comprador_data.get('orgao_emissor', ''),
-                        'uf_emissor': comprador_data.get('uf_emissor', ''),
-                        'logradouro': comprador_data.get('logradouro', ''),
-                        'numero': comprador_data.get('numero', ''),
-                        'complemento': comprador_data.get('complemento', ''),
-                        'bairro': comprador_data.get('bairro', ''),
-                        'cidade': comprador_data.get('cidade', ''),
-                        'uf': comprador_data.get('uf', ''),
-                        'cep': comprador_data.get('cep', ''),
-                        'aceite_termo': True,
-                        'data_aceite': timezone.now(),
-                        'ip_aceite': ip_cliente,
-                        'created_by': request.user,
-                    }
-                )
-                
-                # Se já existe, atualiza dados se necessário
-                if not created:
-                    comprador_pirotecnia.aceite_termo = True
-                    comprador_pirotecnia.data_aceite = timezone.now()
-                    comprador_pirotecnia.ip_aceite = ip_cliente
-                    comprador_pirotecnia.save()
-                
-            except ValidationError as e:
-                return JsonResponse({'erro': str(e)}, status=400)
-            except Exception as e:
-                logger.error(f"Erro ao validar comprador: {str(e)}", exc_info=True)
-                return JsonResponse({'erro': f'Erro ao validar dados do comprador: {str(e)}'}, status=400)
         
         # Cria o pedido usando o serviço
         try:
@@ -597,44 +521,6 @@ def finalizar_venda(request):
                 local_estoque=local_estoque,
             )
             
-            # Registra vendas de produtos com restrição
-            if comprador_pirotecnia and produtos_com_restricao:
-                from vendas.models import ItemPedidoVenda
-                for produto_restricao in produtos_com_restricao:
-                    try:
-                        produto = Produto.objects.filter(
-                            id=produto_restricao['produto_id'],
-                            parametros_por_empresa__empresa=empresa_at,
-                            parametros_por_empresa__ativo_nessa_empresa=True,
-                        ).first()
-                        if not produto:
-                            continue
-                        item_pedido = ItemPedidoVenda.objects.filter(
-                            pedido=pedido,
-                            produto=produto,
-                            is_active=True
-                        ).first()
-                        
-                        if item_pedido:
-                            RegistroVendaPirotecnia.objects.create(
-                                pedido_venda=pedido,
-                                item_pedido=item_pedido,
-                                produto=produto,
-                                comprador=comprador_pirotecnia,
-                                quantidade=Decimal(str(produto_restricao['quantidade'])),
-                                valor_unitario=item_pedido.preco_unitario,
-                                valor_total=item_pedido.total,
-                                numero_certificado_exercito=produto.numero_certificado_exercito,
-                                created_by=request.user,
-                            )
-                            logger.info(
-                                f"Registro pirotécnico criado: Pedido #{pedido.id}, "
-                                f"Produto: {produto.descricao}, Comprador: {comprador_pirotecnia.nome_completo}"
-                            )
-                    except Exception as e:
-                        logger.error(f"Erro ao criar registro pirotécnico: {str(e)}", exc_info=True)
-                        # Não bloqueia a venda, mas registra o erro
-            
             logger.info(f"Venda finalizada com sucesso: Pedido #{pedido.id}")
             
             return JsonResponse({
@@ -642,7 +528,6 @@ def finalizar_venda(request):
                 'pedido_id': pedido.id,
                 'valor_total': str(pedido.valor_total),
                 'mensagem': 'Venda finalizada com sucesso!',
-                'registro_pirotecnia': comprador_pirotecnia is not None
             })
         
         except ValueError as e:

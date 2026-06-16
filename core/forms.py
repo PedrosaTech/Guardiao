@@ -33,7 +33,7 @@ class EmpresaForm(forms.ModelForm):
         ]
         widgets = {
             "nome_fantasia": forms.TextInput(attrs={
-                "class": _FC, "placeholder": "Ex: Pirotecnia Guardiao",
+                "class": _FC, "placeholder": "Ex: Guardião Comércio",
             }),
             "razao_social": forms.TextInput(attrs={
                 "class": _FC, "placeholder": "Razao Social completa",

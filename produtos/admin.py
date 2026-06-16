@@ -51,7 +51,7 @@ class ProdutoAdmin(admin.ModelAdmin):
             'fields': ('categoria', 'codigo_interno', 'codigo_barras', 'descricao'),
             'description': '⚠️ O código interno é gerado automaticamente pelo sistema ao salvar (formato: PROD-0001, PROD-0002, etc.) se deixado em branco na primeira gravação.',
         }),
-        ('Características de Pirotecnia', {
+        ('Características Adicionais', {
             'fields': (
                 'classe_risco', 'subclasse_risco', 'possui_restricao_exercito',
                 'numero_certificado_exercito', 'numero_lote', 'validade', 'condicoes_armazenamento'

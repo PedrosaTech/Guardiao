@@ -21,7 +21,7 @@ def _produto_defaults(categoria, indice):
     return dict(
         categoria=categoria,
         descricao=f'Produto concorrente {indice}',
-        classe_risco='1.4G',
+        classe_risco='OUTRA',
         ncm='36041000',
     )
 
@@ -104,7 +104,7 @@ class CatalogoGlobalProdutoTests(TestCase):
         self.produto = Produto.objects.create(
             categoria=self.categoria,
             descricao='P1',
-            classe_risco='1.4G',
+            classe_risco='OUTRA',
             ncm='36041000',
         )
         ProdutoParametrosEmpresa.objects.create(

@@ -12,7 +12,7 @@ from vendas.models import PedidoVenda
 
 class EventoVenda(BaseModel):
     """
-    Evento de venda externa de fogos de artifício.
+    Evento de venda externa.
     
     Gerencia vendas para eventos como São João, Réveillon, Casamentos, etc.
     """

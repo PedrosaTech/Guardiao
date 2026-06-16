@@ -177,10 +177,7 @@ def criar_produto(request):
                     categoria_id=request.POST.get('categoria'),
                     codigo_barras=(request.POST.get('codigo_barras') or '').strip() or None,
                     descricao=request.POST.get('descricao'),
-                    classe_risco=request.POST.get('classe_risco'),
-                    subclasse_risco=request.POST.get('subclasse_risco') or None,
-                    possui_restricao_exercito=request.POST.get('possui_restricao_exercito') == 'on',
-                    numero_certificado_exercito=request.POST.get('numero_certificado_exercito') or None,
+                    classe_risco='OUTRA',
                     numero_lote=request.POST.get('numero_lote') or None,
                     validade=request.POST.get('validade') or None,
                     condicoes_armazenamento=request.POST.get('condicoes_armazenamento') or None,
@@ -228,7 +225,6 @@ def criar_produto(request):
             context = {
                 'empresas': empresas,
                 'categorias': categorias,
-                'classe_risco_choices': Produto.CLASSE_RISCO_CHOICES,
                 'erro': str(e),
                 'form_data': request.POST,
             }
@@ -237,7 +233,6 @@ def criar_produto(request):
     context = {
         'empresas': empresas,
         'categorias': categorias,
-        'classe_risco_choices': Produto.CLASSE_RISCO_CHOICES,
     }
 
     return render(request, 'produtos/criar_produto.html', context)

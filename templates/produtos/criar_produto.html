@@ -176,55 +176,6 @@
 
                 <hr>
 
-                <h3>Características de Pirotecnia</h3>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Classe de Risco <span class="required">*</span></label>
-                        <select name="classe_risco" required>
-                            <option value="">Selecione...</option>
-                            {% for value, label in classe_risco_choices %}
-                            <option value="{{ value }}">{{ label }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Subclasse de Risco</label>
-                        <input type="text" name="subclasse_risco">
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label>
-                        <input type="checkbox" name="possui_restricao_exercito" style="width: auto; margin-right: 5px;">
-                        Possui Restrição de Exército
-                    </label>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Número do Certificado do Exército</label>
-                        <input type="text" name="numero_certificado_exercito">
-                    </div>
-                    <div class="form-group">
-                        <label>Número do Lote</label>
-                        <input type="text" name="numero_lote">
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Validade</label>
-                        <input type="date" name="validade">
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label>Condições de Armazenamento</label>
-                    <textarea name="condicoes_armazenamento"></textarea>
-                </div>
-
-                <hr>
-
                 <h3>Dados Fiscais - NCM, CEST e CFOP</h3>
                 <div class="form-row">
                     <div class="form-group">

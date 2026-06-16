@@ -1,2 +1,1 @@
-# Guardião - ERP para Pirotecnia
-
+# Guardião ERP

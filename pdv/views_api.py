@@ -25,7 +25,6 @@ from vendas.models import PedidoVenda
 from vendas.services import efetivar_pedido_tablet
 from .models import CaixaSessao, Pagamento
 from .serializers import CaixaSessaoSerializer, PagamentoSerializer
-from .validators import validar_cpf, formatar_cpf, calcular_idade, validar_idade_minima
 
 
 class CaixaSessaoViewSet(viewsets.ModelViewSet):
@@ -88,76 +87,6 @@ def buscar_produtos_pdv(request):
             'codigo_alternativo_id': None,
         })
     return Response({'produtos': resultados})
-
-
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def validar_comprador_pirotecnia(request):
-    """
-    API para validar dados do comprador de produtos pirotécnicos.
-    
-    POST /api/v1/pdv/validar-comprador/
-    
-    Body:
-    {
-        "cpf": "123.456.789-00",
-        "data_nascimento": "1990-01-01",
-        "nome_completo": "Nome do Comprador"
-    }
-    
-    Retorna validação de CPF e idade.
-    """
-    try:
-        cpf = request.data.get('cpf', '').strip()
-        data_nascimento = request.data.get('data_nascimento', '').strip()
-        nome_completo = request.data.get('nome_completo', '').strip()
-        
-        erros = {}
-        
-        # Valida CPF
-        cpf_formatado = None
-        if not cpf:
-            erros['cpf'] = 'CPF é obrigatório'
-        else:
-            try:
-                cpf_limpo = validar_cpf(cpf)
-                cpf_formatado = formatar_cpf(cpf_limpo)
-            except ValidationError as e:
-                erros['cpf'] = str(e)
-                cpf_formatado = None
-        
-        # Valida data de nascimento
-        idade = None
-        if not data_nascimento:
-            erros['data_nascimento'] = 'Data de nascimento é obrigatória'
-        else:
-            try:
-                from datetime import datetime
-                data_nasc = datetime.strptime(data_nascimento, '%Y-%m-%d').date()
-                validar_idade_minima(data_nasc, idade_minima=18)
-                idade = calcular_idade(data_nasc)
-            except ValueError:
-                erros['data_nascimento'] = 'Data de nascimento inválida'
-            except ValidationError as e:
-                erros['data_nascimento'] = str(e)
-                idade = None
-        
-        # Valida nome
-        if not nome_completo:
-            erros['nome_completo'] = 'Nome completo é obrigatório'
-        
-        if erros:
-            return Response({'valido': False, 'erros': erros}, status=400)
-        
-        return Response({
-            'valido': True,
-            'cpf_formatado': cpf_formatado,
-            'idade': idade,
-            'maior_idade': idade >= 18
-        })
-    
-    except Exception as e:
-        return Response({'valido': False, 'erro': str(e)}, status=500)
 
 
 # ---------------------------------------------------------------------------
