@@ -1,11 +1,24 @@
 {% load admin_tags %}
+{% load static %}
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Guardião ERP{% endblock %}</title>
+    <title>{% block title %}Código da Terra — ERP{% endblock %}</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%231B5E2E'/><text x='16' y='22' text-anchor='middle' font-size='18' font-family='Arial' font-weight='bold' fill='%23D4A017'>G</text></svg>">
     <style>
+        :root {
+            --verde-escuro: #1B5E2E;
+            --verde-medio: #2E7D45;
+            --dourado: #D4A017;
+            --dourado-claro: #F0C040;
+            --creme: #F0EDE6;
+            --creme-escuro: #E5E1D8;
+            --branco: #FFFFFF;
+            --texto-escuro: #1A1A1A;
+            --texto-medio: #4A4A4A;
+        }
         * {
             margin: 0;
             padding: 0;
@@ -13,15 +26,22 @@
         }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f5f5f5;
+            background: var(--creme);
+            color: var(--texto-escuro);
             display: flex;
             min-height: 100vh;
         }
-        /* Sidebar — tipografia unificada (mesma família e escala) */
+        a {
+            color: var(--verde-escuro);
+        }
+        a:hover {
+            color: var(--verde-medio);
+        }
+        /* Sidebar */
         .sidebar {
             width: 260px;
-            background: linear-gradient(180deg, #2c3e50 0%, #34495e 100%);
-            color: white;
+            background: linear-gradient(180deg, var(--verde-escuro) 0%, var(--verde-medio) 100%);
+            color: var(--branco);
             position: fixed;
             height: 100vh;
             overflow-y: auto;
@@ -34,19 +54,18 @@
         }
         .sidebar-header {
             padding: 20px;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
+            border-bottom: 1px solid rgba(212,160,23,0.3);
+            text-align: center;
         }
-        .sidebar-header h1 {
-            font-size: 16px;
-            font-weight: 600;
-            line-height: 1.3;
-            margin-bottom: 5px;
+        .sidebar-logo img {
+            max-width: 140px;
+            height: auto;
+            margin-bottom: 8px;
         }
-        .sidebar-header p {
-            font-size: 12px;
-            font-weight: 400;
-            line-height: 1.35;
+        .sidebar-logo p {
+            font-size: 11px;
             opacity: 0.8;
+            color: var(--dourado-claro);
         }
         .sidebar-menu {
             padding: 20px 0;
@@ -59,7 +78,7 @@
             font-size: 11px;
             font-family: inherit;
             text-transform: uppercase;
-            color: rgba(255,255,255,0.6);
+            color: rgba(240,192,64,0.75);
             font-weight: 600;
             letter-spacing: 0.08em;
             line-height: 1.3;
@@ -78,14 +97,14 @@
             border-left: 3px solid transparent;
         }
         .menu-item:hover {
-            background: rgba(255,255,255,0.1);
-            border-left-color: #3498db;
-            color: white;
+            background: rgba(212,160,23,0.15);
+            border-left-color: var(--dourado);
+            color: var(--branco);
         }
         .menu-item.active {
-            background: rgba(255,255,255,0.15);
-            border-left-color: #3498db;
-            color: white;
+            background: rgba(212,160,23,0.2);
+            border-left-color: var(--dourado);
+            color: var(--branco);
             font-weight: 500;
         }
         .menu-item-icon {
@@ -103,7 +122,7 @@
             min-height: 100vh;
         }
         .topbar {
-            background: white;
+            background: var(--verde-escuro);
             padding: 15px 30px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             display: flex;
@@ -112,6 +131,10 @@
             position: sticky;
             top: 0;
             z-index: 100;
+        }
+        .topbar h2 {
+            color: var(--branco);
+            font-size: 18px;
         }
         .topbar-user {
             display: flex;
@@ -123,15 +146,85 @@
         }
         .topbar-user-name {
             font-weight: 600;
-            color: #2c3e50;
+            color: var(--branco);
             font-size: 14px;
         }
         .topbar-user-role {
             font-size: 12px;
-            color: #7f8c8d;
+            color: rgba(255,255,255,0.75);
+        }
+        .topbar label {
+            color: rgba(255,255,255,0.85) !important;
+        }
+        .topbar a {
+            color: var(--dourado-claro);
+            text-decoration: none;
+            font-size: 14px;
+        }
+        .topbar a:hover {
+            color: var(--dourado);
+        }
+        .topbar a.logout-link {
+            color: #f5b7b1;
         }
         .content-wrapper {
             padding: 30px;
+        }
+        /* Botões primários */
+        .btn-primary,
+        .btn-success,
+        button[type="submit"]:not(.btn-secondary):not(.btn-danger):not(.btn-outline),
+        input[type="submit"]:not(.btn-secondary):not(.btn-danger) {
+            background: var(--dourado) !important;
+            border-color: var(--dourado) !important;
+            color: var(--verde-escuro) !important;
+            font-weight: 600;
+        }
+        .btn-primary:hover,
+        .btn-success:hover,
+        button[type="submit"]:not(.btn-secondary):not(.btn-danger):not(.btn-outline):hover,
+        input[type="submit"]:not(.btn-secondary):not(.btn-danger):hover {
+            background: var(--dourado-claro) !important;
+            border-color: var(--dourado-claro) !important;
+            color: var(--verde-escuro) !important;
+        }
+        /* Cards */
+        .card {
+            background: var(--branco);
+            border-radius: 8px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+        }
+        .card:hover {
+            background: var(--creme-escuro);
+        }
+        /* Tabelas */
+        table thead,
+        .table thead,
+        thead {
+            background: var(--verde-escuro);
+            color: var(--branco);
+        }
+        table thead th,
+        .table thead th,
+        thead th {
+            color: var(--branco);
+            border-color: var(--verde-medio);
+        }
+        table tbody tr:hover,
+        .table tbody tr:hover,
+        tbody tr:hover {
+            background: var(--creme);
+        }
+        /* Badges */
+        .badge-success,
+        .badge.bg-success {
+            background: var(--verde-escuro) !important;
+            color: var(--branco) !important;
+        }
+        .badge-primary,
+        .badge.bg-primary {
+            background: var(--dourado) !important;
+            color: var(--verde-escuro) !important;
         }
         /* Responsive */
         @media (max-width: 768px) {
@@ -153,8 +246,10 @@
     <!-- Sidebar -->
     <aside class="sidebar" id="app-sidebar">
         <div class="sidebar-header">
-            <h1>🛡️ Guardião</h1>
-            <p>ERP</p>
+            <div class="sidebar-logo">
+                <img src="{% static 'img/logo.png' %}" alt="Código da Terra">
+                <p>ERP Multi-Segmento</p>
+            </div>
         </div>
         <nav class="sidebar-menu">
             <div class="menu-section">
@@ -289,7 +384,7 @@
     <main class="main-content">
         <div class="topbar">
             <div>
-                <h2 style="color: #2c3e50; font-size: 18px;">{% block page_title %}Dashboard{% endblock %}</h2>
+                <h2>{% block page_title %}Dashboard{% endblock %}</h2>
             </div>
             <div class="topbar-user">
                 {% if user.is_authenticated %}
@@ -297,8 +392,8 @@
                 <form method="post" action="{% url 'core:trocar_empresa' %}" id="form-trocar-empresa" style="display: flex; align-items: center; gap: 8px;">
                     {% csrf_token %}
                     <input type="hidden" name="next" value="{{ request.path }}">
-                    <label for="select-empresa-ativa" style="font-size: 12px; color: #7f8c8d;">Empresa</label>
-                    <select name="empresa_id" id="select-empresa-ativa" onchange="document.getElementById('form-trocar-empresa').submit()" style="padding: 6px 10px; border-radius: 6px; border: 1px solid #bdc3c7; font-size: 13px; max-width: 220px;">
+                    <label for="select-empresa-ativa">Empresa</label>
+                    <select name="empresa_id" id="select-empresa-ativa" onchange="document.getElementById('form-trocar-empresa').submit()" style="padding: 6px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.3); font-size: 13px; max-width: 220px; background: var(--branco); color: var(--texto-escuro);">
                         {% for ue in usuario_empresas_ativas %}
                         <option value="{{ ue.empresa.id }}" {% if empresa_ativa_session_id == ue.empresa.id %}selected{% endif %}>{{ ue.empresa.nome_fantasia }}</option>
                         {% endfor %}
@@ -311,9 +406,9 @@
                         {% if user.is_superuser %}Administrador{% else %}Usuário{% endif %}
                     </div>
                 </div>
-                <a href="/admin/logout/" style="color: #e74c3c; text-decoration: none; font-size: 14px;">Sair</a>
+                <a href="/admin/logout/" class="logout-link">Sair</a>
                 {% else %}
-                <a href="/admin/login/" style="color: #3498db; text-decoration: none; font-size: 14px;">Entrar</a>
+                <a href="/admin/login/">Entrar</a>
                 {% endif %}
             </div>
         </div>
@@ -476,7 +571,7 @@
             div.style.cssText =
                 'position:fixed;bottom:20px;right:20px;padding:8px 16px;border-radius:4px;' +
                 'font-size:13px;z-index:9999;opacity:1;transition:opacity 0.5s;' +
-                'background:' + (tipo === 'sucesso' ? '#28a745' : '#dc3545') + ';color:white;';
+                'background:' + (tipo === 'sucesso' ? '#1B5E2E' : '#dc3545') + ';color:white;';
             document.body.appendChild(div);
             setTimeout(function () {
                 div.style.opacity = '0';
