@@ -1,0 +1,218 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#1B5E2E">
+    <title>{% block title %}Café Al-qui-mia{% endblock %}</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%231B5E2E'/><text x='16' y='22' text-anchor='middle' font-size='18' font-family='Arial' font-weight='bold' fill='%23D4A017'>C</text></svg>">
+    <style>
+        :root {
+            --verde-escuro: #1B5E2E;
+            --verde-medio: #2E7D45;
+            --dourado: #D4A017;
+            --dourado-claro: #F0C040;
+            --creme: #F0EDE6;
+            --creme-escuro: #E5E1D8;
+            --branco: #FFFFFF;
+            --texto-escuro: #1A1A1A;
+            --texto-medio: #4A4A4A;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--creme);
+            color: var(--texto-escuro);
+            min-height: 100vh;
+            padding-bottom: 88px;
+        }
+        .cafe-header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: linear-gradient(135deg, var(--verde-escuro), var(--verde-medio));
+            color: var(--branco);
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        .cafe-header img { height: 36px; width: auto; }
+        .cafe-header h1 { font-size: 1.1rem; font-weight: 600; line-height: 1.2; }
+        .cafe-header small { display: block; font-size: 0.7rem; color: var(--dourado-claro); opacity: 0.9; }
+        .cafe-main { padding: 16px; max-width: 640px; margin: 0 auto; }
+        .msg {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-size: 0.9rem;
+        }
+        .msg-success { background: #d4edda; color: #155724; }
+        .msg-error { background: #f8d7da; color: #721c24; }
+        .msg-warning { background: #fff3cd; color: #856404; }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 48px;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+            width: 100%;
+        }
+        .btn:active { transform: scale(0.98); }
+        .btn-primary {
+            background: var(--dourado);
+            color: var(--verde-escuro);
+        }
+        .btn-primary:hover { background: var(--dourado-claro); }
+        .btn-secondary {
+            background: var(--verde-escuro);
+            color: var(--branco);
+        }
+        .btn-outline {
+            background: var(--branco);
+            color: var(--verde-escuro);
+            border: 2px solid var(--verde-escuro);
+        }
+        .btn-danger {
+            background: #c0392b;
+            color: var(--branco);
+            min-height: 40px;
+            font-size: 0.85rem;
+            padding: 8px 12px;
+            width: auto;
+        }
+        .card {
+            background: var(--branco);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+        }
+        .card:active { background: var(--creme-escuro); }
+        .form-group { margin-bottom: 16px; }
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 6px;
+            font-size: 0.9rem;
+        }
+        .form-control {
+            width: 100%;
+            min-height: 48px;
+            padding: 12px 14px;
+            font-size: 1rem;
+            border: 2px solid var(--creme-escuro);
+            border-radius: 10px;
+            background: var(--branco);
+        }
+        .form-control:focus {
+            outline: none;
+            border-color: var(--verde-medio);
+        }
+        .fab {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--verde-escuro);
+            color: var(--dourado-claro);
+            font-size: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            box-shadow: 0 4px 16px rgba(27,94,46,0.4);
+            z-index: 50;
+        }
+        .filtros {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        .filtro-btn {
+            flex: 1;
+            min-height: 44px;
+            border-radius: 10px;
+            border: 2px solid var(--verde-escuro);
+            background: var(--branco);
+            color: var(--verde-escuro);
+            font-weight: 600;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+        }
+        .filtro-btn.active {
+            background: var(--verde-escuro);
+            color: var(--branco);
+        }
+        .total-destaque {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--dourado);
+            text-align: center;
+            padding: 16px;
+            background: var(--verde-escuro);
+            color: var(--dourado-claro);
+            border-radius: 12px;
+            margin: 16px 0;
+        }
+        .item-linha {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 8px;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--creme-escuro);
+        }
+        .item-linha:last-child { border-bottom: none; }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 12px;
+            color: var(--verde-escuro);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        .btn-row { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; }
+        @media (min-width: 480px) {
+            .btn-row { flex-direction: row; }
+            .btn-row .btn { flex: 1; }
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <header class="cafe-header">
+        <img src="{% static 'img/logo.png' %}" alt="Código da Terra">
+        <div>
+            <h1>Café Al-qui-mia</h1>
+            <small>Comandas</small>
+        </div>
+    </header>
+
+    <main class="cafe-main">
+        {% if messages %}
+            {% for message in messages %}
+            <div class="msg msg-{{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+        {% block content %}{% endblock %}
+    </main>
+
+    {% block fab %}{% endblock %}
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

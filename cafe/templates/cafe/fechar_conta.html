@@ -1,0 +1,70 @@
+{% extends 'cafe/base_cafe.html' %}
+
+{% block title %}Fechar Conta — #{{ comanda.numero }}{% endblock %}
+
+{% block content %}
+<a href="{% url 'cafe:detalhe' comanda.pk %}" class="back-link">← Comanda #{{ comanda.numero }}</a>
+
+<div class="card">
+    <h2 style="font-size:1.1rem;margin-bottom:12px;">Resumo</h2>
+    {% for item in itens %}
+    <div class="item-linha">
+        <span>{{ item.quantidade|floatformat:-2 }}× {{ item.descricao }}</span>
+        <strong>R$ {{ item.subtotal }}</strong>
+    </div>
+    {% endfor %}
+    <div class="total-destaque" style="margin-top:12px;">
+        Total: R$ {{ comanda.valor_total }}
+    </div>
+</div>
+
+<form method="post">
+    {% csrf_token %}
+    <div class="card">
+        <h3 style="font-size:1rem;margin-bottom:12px;">Forma de pagamento</h3>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+            {% for valor, label in formas %}
+            <label style="display:block;">
+                <input type="radio" name="forma_pagamento" value="{{ valor }}" required
+                       style="position:absolute;opacity:0;">
+                <span class="btn btn-outline forma-btn" data-valor="{{ valor }}">{{ label }}</span>
+            </label>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="form-group" style="margin-bottom:0;">
+            <label for="cpf_cliente">CPF para NFC-e (opcional)</label>
+            <input type="text" id="cpf_cliente" name="cpf_cliente" class="form-control"
+                   value="{{ comanda.cpf_cliente }}" placeholder="000.000.000-00" maxlength="14">
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary" style="margin-top:8px;">Confirmar e Fechar</button>
+</form>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    input[type="radio"]:checked + .forma-btn {
+        background: var(--verde-escuro);
+        color: var(--branco);
+        border-color: var(--verde-escuro);
+    }
+    .forma-btn { display: block; width: 100%; cursor: pointer; }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.querySelectorAll('input[name="forma_pagamento"]').forEach(function (radio) {
+    radio.addEventListener('change', function () {
+        document.querySelectorAll('.forma-btn').forEach(function (b) {
+            b.style.background = '';
+            b.style.color = '';
+        });
+    });
+});
+</script>
+{% endblock %}

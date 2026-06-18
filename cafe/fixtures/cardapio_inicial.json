@@ -1,0 +1,196 @@
+[
+  {
+    "model": "cafe.categoriacafe",
+    "pk": 1,
+    "fields": {
+      "nome": "Bebidas Quentes",
+      "ordem": 1,
+      "icone": "☕",
+      "is_active": true,
+      "created_at": "2026-01-01T12:00:00Z",
+      "updated_at": "2026-01-01T12:00:00Z",
+      "created_by": null,
+      "updated_by": null
+    }
+  },
+  {
+    "model": "cafe.categoriacafe",
+    "pk": 2,
+    "fields": {
+      "nome": "Bebidas Frias",
+      "ordem": 2,
+      "icone": "🧊",
+      "is_active": true,
+      "created_at": "2026-01-01T12:00:00Z",
+      "updated_at": "2026-01-01T12:00:00Z",
+      "created_by": null,
+      "updated_by": null
+    }
+  },
+  {
+    "model": "cafe.categoriacafe",
+    "pk": 3,
+    "fields": {
+      "nome": "Lanches e Comes",
+      "ordem": 3,
+      "icone": "🍞",
+      "is_active": true,
+      "created_at": "2026-01-01T12:00:00Z",
+      "updated_at": "2026-01-01T12:00:00Z",
+      "created_by": null,
+      "updated_by": null
+    }
+  },
+  {
+    "model": "cafe.categoriacafe",
+    "pk": 4,
+    "fields": {
+      "nome": "Doces e Sobremesas",
+      "ordem": 4,
+      "icone": "🍫",
+      "is_active": true,
+      "created_at": "2026-01-01T12:00:00Z",
+      "updated_at": "2026-01-01T12:00:00Z",
+      "created_by": null,
+      "updated_by": null
+    }
+  },
+  {
+    "model": "cafe.itemcardapio",
+    "pk": 1,
+    "fields": {
+      "categoria": 1,
+      "nome": "Latte de Coco da Terra",
+      "icone": "🥥",
+      "descricao": "Espresso suave com leite de coco artesanal e toque de canela.",
+      "ingredientes": "Espresso, leite de coco, canela",
+      "preco": "14.00",
+      "disponibilidade": "DISPONIVEL",
+      "destaque": true,
+      "vegano": true,
+      "sem_gluten": false,
+      "ordem": 1,
+      "tempo_preparo": 5,
+      "is_active": true,
+      "created_at": "2026-01-01T12:00:00Z",
+      "updated_at": "2026-01-01T12:00:00Z",
+      "created_by": null,
+      "updated_by": null
+    }
+  },
+  {
+    "model": "cafe.itemcardapio",
+    "pk": 2,
+    "fields": {
+      "categoria": 1,
+      "nome": "Golden Latte Terapêutico",
+      "icone": "✨",
+      "descricao": "Bebida quente com cúrcuma, gengibre e especiarias da terra.",
+      "ingredientes": "Leite vegetal, cúrcuma, gengibre, melado de cana",
+      "preco": "16.00",
+      "disponibilidade": "DISPONIVEL",
+      "destaque": true,
+      "vegano": true,
+      "sem_gluten": true,
+      "ordem": 2,
+      "tempo_preparo": 6,
+      "is_active": true,
+      "created_at": "2026-01-01T12:00:00Z",
+      "updated_at": "2026-01-01T12:00:00Z",
+      "created_by": null,
+      "updated_by": null
+    }
+  },
+  {
+    "model": "cafe.itemcardapio",
+    "pk": 3,
+    "fields": {
+      "categoria": 1,
+      "nome": "Chocolate Quente de Cacau Puro",
+      "icone": "🍫",
+      "descricao": "Chocolate artesanal 70% cacau, cremoso e intenso.",
+      "ingredientes": "Cacau puro, leite de amêndoas, açúcar de coco",
+      "preco": "16.00",
+      "disponibilidade": "DISPONIVEL",
+      "destaque": false,
+      "vegano": true,
+      "sem_gluten": true,
+      "ordem": 3,
+      "tempo_preparo": 5,
+      "is_active": true,
+      "created_at": "2026-01-01T12:00:00Z",
+      "updated_at": "2026-01-01T12:00:00Z",
+      "created_by": null,
+      "updated_by": null
+    }
+  },
+  {
+    "model": "cafe.itemcardapio",
+    "pk": 4,
+    "fields": {
+      "categoria": 2,
+      "nome": "Cold Brew Coco Mangará",
+      "icone": "🧊",
+      "descricao": "Café extraído a frio com leite de coco e essência de mangará.",
+      "ingredientes": "Cold brew, leite de coco, mangará",
+      "preco": "15.00",
+      "disponibilidade": "DISPONIVEL",
+      "destaque": true,
+      "vegano": true,
+      "sem_gluten": false,
+      "ordem": 1,
+      "tempo_preparo": 3,
+      "is_active": true,
+      "created_at": "2026-01-01T12:00:00Z",
+      "updated_at": "2026-01-01T12:00:00Z",
+      "created_by": null,
+      "updated_by": null
+    }
+  },
+  {
+    "model": "cafe.itemcardapio",
+    "pk": 5,
+    "fields": {
+      "categoria": 2,
+      "nome": "Espresso Tônica Al-qui-mia",
+      "icone": "🍋",
+      "descricao": "Espresso sobre água tônica com casca de limão siciliano.",
+      "ingredientes": "Espresso, água tônica, limão siciliano",
+      "preco": "13.00",
+      "disponibilidade": "DISPONIVEL",
+      "destaque": false,
+      "vegano": false,
+      "sem_gluten": false,
+      "ordem": 2,
+      "tempo_preparo": 4,
+      "is_active": true,
+      "created_at": "2026-01-01T12:00:00Z",
+      "updated_at": "2026-01-01T12:00:00Z",
+      "created_by": null,
+      "updated_by": null
+    }
+  },
+  {
+    "model": "cafe.itemcardapio",
+    "pk": 6,
+    "fields": {
+      "categoria": 2,
+      "nome": "Vitamina de Abacate da Terra",
+      "icone": "🥑",
+      "descricao": "Vitamina cremosa de abacate com banana e sementes.",
+      "ingredientes": "Abacate, banana, leite de coco, sementes",
+      "preco": "18.00",
+      "disponibilidade": "DISPONIVEL",
+      "destaque": true,
+      "vegano": true,
+      "sem_gluten": true,
+      "ordem": 3,
+      "tempo_preparo": 5,
+      "is_active": true,
+      "created_at": "2026-01-01T12:00:00Z",
+      "updated_at": "2026-01-01T12:00:00Z",
+      "created_by": null,
+      "updated_by": null
+    }
+  }
+]

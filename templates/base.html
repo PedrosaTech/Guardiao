@@ -345,6 +345,14 @@
             </div>
             
             <div class="menu-section">
+                <div class="menu-section-title">Café</div>
+                <a href="{% url 'cafe:lista' %}" class="menu-item {% if 'cafe' in request.path %}active{% endif %}">
+                    <span class="menu-item-icon">☕</span>
+                    Al-qui-mia
+                </a>
+            </div>
+
+            <div class="menu-section">
                 <div class="menu-section-title">Sistema</div>
                 <a href="{% url 'core:lista_guias' %}" class="menu-item {% if 'cadastros/guias' in request.path %}active{% endif %}">
                     <span class="menu-item-icon">📘</span>

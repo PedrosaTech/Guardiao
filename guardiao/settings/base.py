@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'vendas',
     'pdv',
     'pdv_movel',
+    'cafe',
     'financeiro',
     'crm',
     'mensagens',

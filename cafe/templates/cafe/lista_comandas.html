@@ -1,0 +1,44 @@
+{% extends 'cafe/base_cafe.html' %}
+
+{% block title %}Comandas — Café Al-qui-mia{% endblock %}
+
+{% block content %}
+<div class="filtros">
+    <a href="?filtro=abertas" class="filtro-btn {% if filtro != 'fechadas_hoje' %}active{% endif %}">Abertas</a>
+    <a href="?filtro=fechadas_hoje" class="filtro-btn {% if filtro == 'fechadas_hoje' %}active{% endif %}">Fechadas hoje</a>
+    <a href="{% url 'cafe:cardapio' %}" class="filtro-btn">☕ Cardápio</a>
+</div>
+
+{% if comandas %}
+    {% for item in comandas %}
+    <a href="{% url 'cafe:detalhe' item.obj.pk %}" class="card" style="display:block;text-decoration:none;color:inherit;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+            <div>
+                <strong style="font-size:1.1rem;">#{{ item.obj.numero }} — {{ item.obj.nome_cliente }}</strong>
+                <p style="color:var(--texto-medio);font-size:0.85rem;margin-top:4px;">
+                    {% if item.obj.status == 'ABERTA' %}
+                        Aberta há {{ item.tempo_aberto }}
+                    {% else %}
+                        Fechada · R$ {{ item.obj.valor_total }}
+                    {% endif %}
+                </p>
+            </div>
+            <div style="text-align:right;">
+                <span style="font-size:1.25rem;font-weight:700;color:var(--verde-escuro);">
+                    R$ {{ item.obj.valor_total }}
+                </span>
+                <p style="font-size:0.75rem;color:var(--texto-medio);">{{ item.obj.get_status_display }}</p>
+            </div>
+        </div>
+    </a>
+    {% endfor %}
+{% else %}
+    <div class="card" style="text-align:center;padding:32px;">
+        <p style="color:var(--texto-medio);">Nenhuma comanda encontrada.</p>
+    </div>
+{% endif %}
+{% endblock %}
+
+{% block fab %}
+<a href="{% url 'cafe:nova' %}" class="fab" title="Nova Comanda">+</a>
+{% endblock %}

@@ -1,0 +1,60 @@
+{% extends 'cafe/base_cafe.html' %}
+
+{% block title %}Comanda #{{ comanda.numero }}{% endblock %}
+
+{% block content %}
+<a href="{% url 'cafe:lista' %}" class="back-link">← Comandas</a>
+
+<div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div>
+            <h2 style="font-size:1.25rem;">#{{ comanda.numero }}</h2>
+            <p style="font-weight:600;">{{ comanda.nome_cliente }}</p>
+            <p style="font-size:0.85rem;color:var(--texto-medio);">
+                {{ comanda.get_status_display }}
+                {% if comanda.status == 'ABERTA' %} · {{ tempo_aberto }}{% endif %}
+            </p>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <h3 style="font-size:1rem;margin-bottom:12px;">Itens</h3>
+    {% if itens %}
+        {% for item in itens %}
+        <div class="item-linha">
+            <div style="flex:1;">
+                <strong>{{ item.quantidade|floatformat:-2 }}× {{ item.descricao }}</strong>
+                {% if item.observacao %}
+                <p style="font-size:0.8rem;color:var(--texto-medio);">{{ item.observacao }}</p>
+                {% endif %}
+            </div>
+            <div style="text-align:right;">
+                <div style="font-weight:600;">R$ {{ item.subtotal }}</div>
+                {% if comanda.status == 'ABERTA' %}
+                <form method="post" action="{% url 'cafe:cancelar_item' item.pk %}" style="margin-top:4px;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger" onclick="return confirm('Remover este item?');">Remover</button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <p style="color:var(--texto-medio);text-align:center;padding:16px;">Nenhum item ainda.</p>
+    {% endif %}
+</div>
+
+<div class="total-destaque">
+    Total: R$ {{ comanda.valor_total }}
+</div>
+
+{% if comanda.status == 'ABERTA' %}
+<div class="btn-row">
+    <a href="{% url 'cafe:adicionar_item' comanda.pk %}" class="btn btn-secondary">+ Adicionar Itens</a>
+    <a href="{% url 'cafe:fechar' comanda.pk %}" class="btn btn-primary">Fechar Conta</a>
+</div>
+{% elif comanda.status == 'FECHADA' %}
+<a href="{% url 'cafe:recibo' comanda.pk %}" class="btn btn-primary">Ver Recibo</a>
+{% endif %}
+{% endblock %}

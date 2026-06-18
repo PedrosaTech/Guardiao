@@ -1,0 +1,142 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <meta name="theme-color" content="#1B5E2E">
+    <title>Cardápio — Café Al-qui-mia</title>
+    <style>
+        :root {
+            --verde-escuro: #1B5E2E;
+            --verde-medio: #2E7D45;
+            --dourado: #D4A017;
+            --dourado-claro: #F0C040;
+            --creme: #F0EDE6;
+            --creme-escuro: #E5E1D8;
+            --branco: #FFFFFF;
+            --texto-escuro: #1A1A1A;
+            --texto-medio: #4A4A4A;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--creme);
+            color: var(--texto-escuro);
+            min-height: 100vh;
+        }
+        .hero {
+            background: linear-gradient(135deg, var(--verde-escuro), var(--verde-medio));
+            color: white;
+            text-align: center;
+            padding: 32px 20px 40px;
+        }
+        .hero img { height: 56px; margin-bottom: 12px; }
+        .hero h1 { font-size: 1.75rem; font-weight: 700; }
+        .hero p { color: var(--dourado-claro); margin-top: 8px; font-size: 0.95rem; }
+        .container { max-width: 720px; margin: 0 auto; padding: 24px 16px 48px; }
+        .categoria-titulo {
+            font-size: 1.25rem;
+            color: var(--verde-escuro);
+            margin: 28px 0 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid var(--dourado);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .item-card {
+            background: var(--branco);
+            border-radius: 14px;
+            padding: 18px 20px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        .item-card.indisponivel {
+            opacity: 0.5;
+            background: var(--creme-escuro);
+        }
+        .item-card.indisponivel .item-nome {
+            text-decoration: line-through;
+            color: var(--texto-medio);
+        }
+        .item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+        }
+        .item-nome { font-size: 1.1rem; font-weight: 600; }
+        .item-preco {
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: var(--dourado);
+            white-space: nowrap;
+        }
+        .item-desc {
+            font-size: 0.9rem;
+            color: var(--texto-medio);
+            margin-top: 8px;
+            line-height: 1.45;
+        }
+        .badges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+        .badge {
+            font-size: 0.75rem;
+            padding: 4px 10px;
+            border-radius: 20px;
+            background: var(--creme);
+            color: var(--verde-escuro);
+            font-weight: 600;
+        }
+        .badge-destaque { background: var(--dourado); }
+        .indisponivel-label {
+            font-size: 0.75rem;
+            color: #888;
+            font-style: italic;
+            margin-top: 6px;
+        }
+        @media (min-width: 768px) {
+            .hero h1 { font-size: 2.25rem; }
+            .container { padding: 32px 24px 64px; }
+        }
+    </style>
+</head>
+<body>
+    <header class="hero">
+        <img src="{% static 'img/logo.png' %}" alt="Código da Terra">
+        <h1>Café Al-qui-mia</h1>
+        <p>Cardápio · Código da Terra</p>
+    </header>
+
+    <main class="container">
+        {% for cat in categorias %}
+        <h2 class="categoria-titulo"><span>{{ cat.icone }}</span> {{ cat.nome }}</h2>
+
+        {% for item in cat.itens.all %}
+        <article class="item-card {% if item.disponibilidade != 'DISPONIVEL' %}indisponivel{% endif %}">
+            <div class="item-header">
+                <div>
+                    <div class="item-nome">{{ item.nome }}</div>
+                    {% if item.disponibilidade != 'DISPONIVEL' %}
+                    <div class="indisponivel-label">Indisponível no momento</div>
+                    {% endif %}
+                </div>
+                <div class="item-preco">R$ {{ item.preco }}</div>
+            </div>
+            {% if item.descricao %}
+            <p class="item-desc">{{ item.descricao }}</p>
+            {% endif %}
+            <div class="badges">
+                {% if item.destaque %}<span class="badge badge-destaque">⭐ Destaque</span>{% endif %}
+                {% if item.vegano %}<span class="badge">🌱 Vegano</span>{% endif %}
+                {% if item.sem_gluten %}<span class="badge">🌾 Sem Glúten</span>{% endif %}
+                {% if item.tempo_preparo %}<span class="badge">⏱ {{ item.tempo_preparo }} min</span>{% endif %}
+            </div>
+        </article>
+        {% empty %}
+        <p style="color:var(--texto-medio);font-size:0.9rem;">Em breve novidades nesta categoria.</p>
+        {% endfor %}
+        {% endfor %}
+    </main>
+</body>
+</html>

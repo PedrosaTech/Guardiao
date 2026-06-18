@@ -1,0 +1,128 @@
+{% extends 'cafe/base_cafe.html' %}
+
+{% block title %}Cardápio — Café Al-qui-mia{% endblock %}
+
+{% block content %}
+<a href="{% url 'cafe:lista' %}" class="back-link">← Comandas</a>
+
+<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
+    <a href="{% url 'cafe:nova_categoria' %}" class="btn btn-outline" style="width:auto;flex:1;min-width:140px;">+ Categoria</a>
+    <a href="{% url 'cafe:novo_item' %}" class="btn btn-primary" style="width:auto;flex:1;min-width:140px;">+ Item</a>
+    <a href="{% url 'cafe:cardapio_publico' %}" class="btn btn-secondary" style="width:auto;flex:1;min-width:140px;" target="_blank">Ver público</a>
+</div>
+
+<div class="filtros">
+    <a href="?disponivel=todos" class="filtro-btn {% if filtro == 'todos' %}active{% endif %}">Todos</a>
+    <a href="?disponivel=sim" class="filtro-btn {% if filtro == 'sim' %}active{% endif %}">Disponíveis</a>
+    <a href="?disponivel=nao" class="filtro-btn {% if filtro == 'nao' %}active{% endif %}">Indisponíveis</a>
+</div>
+
+{% for cat in categorias %}
+<section style="margin-bottom:24px;">
+    <h2 style="font-size:1.1rem;color:var(--verde-escuro);margin-bottom:12px;display:flex;align-items:center;gap:8px;">
+        <span>{{ cat.icone }}</span> {{ cat.nome }}
+        <a href="{% url 'cafe:editar_categoria' cat.pk %}" style="font-size:0.75rem;font-weight:400;margin-left:auto;">Editar</a>
+    </h2>
+
+    {% for item in cat.itens.all %}
+    <div class="card item-cardapio-card" data-item-id="{{ item.pk }}"
+         style="{% if item.disponibilidade != 'DISPONIVEL' %}opacity:0.65;{% endif %}">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
+            <div style="flex:1;">
+                <strong style="font-size:1rem;{% if item.disponibilidade != 'DISPONIVEL' %}text-decoration:line-through;{% endif %}">
+                    {{ item.nome }}
+                </strong>
+                {% if item.descricao %}
+                <p style="font-size:0.85rem;color:var(--texto-medio);margin-top:4px;">{{ item.descricao|truncatechars:80 }}</p>
+                {% endif %}
+                <div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:4px;">
+                    {% if item.destaque %}<span class="badge-tag badge-destaque">⭐ Destaque</span>{% endif %}
+                    {% if item.vegano %}<span class="badge-tag">🌱 Vegano</span>{% endif %}
+                    {% if item.sem_gluten %}<span class="badge-tag">🌾 Sem Glúten</span>{% endif %}
+                    <span class="badge-tag badge-status">{{ item.get_disponibilidade_display }}</span>
+                </div>
+            </div>
+            <div style="text-align:right;">
+                <div style="font-size:1.15rem;font-weight:700;color:var(--dourado);">R$ {{ item.preco }}</div>
+                <div style="margin-top:8px;display:flex;flex-direction:column;gap:4px;">
+                    <button type="button" class="btn-toggle-disp btn btn-outline"
+                            data-url="{% url 'cafe:toggle_disponibilidade' item.pk %}"
+                            data-disp="{{ item.disponibilidade }}"
+                            style="min-height:36px;font-size:0.8rem;padding:6px 10px;">
+                        {% if item.disponibilidade == 'DISPONIVEL' %}Marcar indisponível{% else %}Marcar disponível{% endif %}
+                    </button>
+                    <a href="{% url 'cafe:editar_item' item.pk %}" class="btn btn-outline"
+                       style="min-height:36px;font-size:0.8rem;padding:6px 10px;">Editar</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <p style="color:var(--texto-medio);font-size:0.9rem;padding:8px 0;">Nenhum item nesta categoria.</p>
+    {% endfor %}
+</section>
+{% empty %}
+<div class="card" style="text-align:center;padding:32px;">
+    <p>Nenhuma categoria cadastrada.</p>
+    <a href="{% url 'cafe:nova_categoria' %}" class="btn btn-primary" style="margin-top:12px;">Criar categoria</a>
+</div>
+{% endfor %}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .badge-tag {
+        display: inline-block;
+        font-size: 0.7rem;
+        padding: 2px 8px;
+        border-radius: 20px;
+        background: var(--creme-escuro);
+        color: var(--texto-medio);
+    }
+    .badge-destaque { background: var(--dourado); color: var(--verde-escuro); font-weight: 600; }
+    .badge-status { background: var(--verde-escuro); color: white; }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    function getCookie(name) {
+        var v = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+        return v ? v.pop() : '';
+    }
+    document.querySelectorAll('.btn-toggle-disp').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            var url = btn.dataset.url;
+            btn.disabled = true;
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+            })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                if (!data.ok) return;
+                var card = btn.closest('.item-cardapio-card');
+                if (data.disponibilidade === 'DISPONIVEL') {
+                    card.style.opacity = '1';
+                    btn.textContent = 'Marcar indisponível';
+                    card.querySelector('strong').style.textDecoration = 'none';
+                } else {
+                    card.style.opacity = '0.65';
+                    btn.textContent = 'Marcar disponível';
+                    card.querySelector('strong').style.textDecoration = 'line-through';
+                }
+                var badge = card.querySelector('.badge-status');
+                if (badge) badge.textContent = data.label;
+            })
+            .finally(function () { btn.disabled = false; });
+        });
+    });
+})();
+</script>
+{% endblock %}
+
+{% block fab %}{% endblock %}

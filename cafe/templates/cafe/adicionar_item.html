@@ -1,0 +1,474 @@
+{% extends 'cafe/base_cafe.html' %}
+
+{% block title %}Adicionar — #{{ comanda.numero }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .barra-comanda {
+        position: sticky;
+        top: 60px;
+        z-index: 90;
+        background: var(--verde-escuro);
+        color: var(--branco);
+        border-radius: 12px;
+        padding: 12px 16px;
+        margin-bottom: 12px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    }
+    .barra-comanda .total-live {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--dourado-claro);
+    }
+    .cat-tabs {
+        display: flex;
+        gap: 8px;
+        overflow-x: auto;
+        padding-bottom: 4px;
+        margin-bottom: 16px;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+    }
+    .cat-tabs::-webkit-scrollbar { display: none; }
+    .cat-tab {
+        flex-shrink: 0;
+        min-height: 44px;
+        padding: 8px 16px;
+        border-radius: 22px;
+        border: 2px solid var(--verde-escuro);
+        background: var(--branco);
+        color: var(--verde-escuro);
+        font-weight: 600;
+        font-size: 0.9rem;
+        cursor: pointer;
+        white-space: nowrap;
+    }
+    .cat-tab.active {
+        background: var(--verde-escuro);
+        color: var(--branco);
+    }
+    .grid-produtos {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+    @media (min-width: 540px) {
+        .grid-produtos { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (min-width: 768px) {
+        .grid-produtos { grid-template-columns: repeat(4, 1fr); gap: 12px; }
+        .cafe-main { max-width: 900px; }
+    }
+    .produto-tile {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 130px;
+        padding: 14px 10px 12px;
+        background: var(--branco);
+        border: 2px solid var(--creme-escuro);
+        border-radius: 14px;
+        cursor: pointer;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+        transition: transform 0.12s, border-color 0.12s, box-shadow 0.12s;
+        touch-action: manipulation;
+    }
+    .produto-tile:active,
+    .produto-tile.adding {
+        transform: scale(0.95);
+        border-color: var(--dourado);
+        box-shadow: 0 0 0 3px rgba(212,160,23,0.35);
+    }
+    .produto-tile.added {
+        animation: pulse-add 0.4s ease;
+    }
+    @keyframes pulse-add {
+        0% { background: var(--dourado-claro); }
+        100% { background: var(--branco); }
+    }
+    .produto-tile .emoji {
+        font-size: 2.5rem;
+        line-height: 1;
+        margin-bottom: 6px;
+    }
+    .produto-tile .nome {
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-align: center;
+        line-height: 1.2;
+        color: var(--texto-escuro);
+    }
+    .produto-tile .preco {
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: var(--dourado);
+        margin-top: 4px;
+    }
+    .produto-tile .badges {
+        display: flex;
+        gap: 2px;
+        margin-top: 4px;
+        font-size: 0.75rem;
+    }
+    .produto-tile .btn-detalhe {
+        position: absolute;
+        top: 6px;
+        right: 6px;
+        width: 28px;
+        height: 28px;
+        border: none;
+        border-radius: 50%;
+        background: var(--creme);
+        color: var(--texto-medio);
+        font-size: 0.85rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .sec-categoria { margin-bottom: 20px; }
+    .sec-categoria.hidden { display: none; }
+    .sec-categoria h2 {
+        font-size: 0.95rem;
+        color: var(--verde-escuro);
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .busca-colapsavel {
+        margin-bottom: 12px;
+    }
+    .busca-colapsavel summary {
+        cursor: pointer;
+        font-weight: 600;
+        color: var(--verde-escuro);
+        font-size: 0.9rem;
+        padding: 8px 0;
+    }
+    .fab-comanda {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 100;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 52px;
+        padding: 0 24px;
+        background: var(--verde-escuro);
+        color: var(--dourado-claro);
+        border-radius: 26px;
+        text-decoration: none;
+        font-weight: 700;
+        box-shadow: 0 4px 20px rgba(27,94,46,0.45);
+        white-space: nowrap;
+    }
+    .fab-comanda .badge-count {
+        background: var(--dourado);
+        color: var(--verde-escuro);
+        border-radius: 12px;
+        padding: 2px 8px;
+        font-size: 0.85rem;
+    }
+    .toast {
+        position: fixed;
+        bottom: 88px;
+        left: 50%;
+        transform: translateX(-50%) translateY(20px);
+        z-index: 200;
+        background: var(--verde-escuro);
+        color: var(--branco);
+        padding: 12px 20px;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.25s, transform 0.25s;
+        max-width: 90vw;
+        text-align: center;
+    }
+    .toast.show {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 300;
+        background: rgba(0,0,0,0.45);
+        align-items: flex-end;
+        justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal-sheet {
+        background: var(--branco);
+        border-radius: 16px 16px 0 0;
+        padding: 20px;
+        width: 100%;
+        max-width: 480px;
+        animation: slide-up 0.25s ease;
+    }
+    @keyframes slide-up {
+        from { transform: translateY(100%); }
+        to { transform: translateY(0); }
+    }
+    .modal-sheet h3 { margin-bottom: 16px; font-size: 1.1rem; }
+    .modal-actions { display: flex; gap: 10px; margin-top: 16px; }
+    .modal-actions .btn { flex: 1; }
+    .hint-toque {
+        text-align: center;
+        color: var(--texto-medio);
+        font-size: 0.85rem;
+        margin-bottom: 12px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<a href="{% url 'cafe:detalhe' comanda.pk %}" class="back-link">← Comanda #{{ comanda.numero }}</a>
+
+<div class="barra-comanda">
+    <div>
+        <div style="font-size:0.85rem;opacity:0.9;">{{ comanda.nome_cliente }}</div>
+        <div style="font-size:0.8rem;opacity:0.75;"><span id="itens-count">{{ itens_count }}</span> item(ns)</div>
+    </div>
+    <div class="total-live">R$ <span id="total-live">{{ comanda.valor_total }}</span></div>
+</div>
+
+<p class="hint-toque">Toque no item para adicionar · ⋯ para observação</p>
+
+<div class="cat-tabs" id="cat-tabs">
+    <button type="button" class="cat-tab active" data-cat="todos">Todos</button>
+    {% for cat in categorias %}
+    <button type="button" class="cat-tab" data-cat="cat-{{ cat.pk }}">{{ cat.icone }} {{ cat.nome }}</button>
+    {% endfor %}
+</div>
+
+<details class="busca-colapsavel card" style="padding:12px 16px;">
+    <summary>🔍 Buscar por nome</summary>
+    <div class="form-group" style="margin-top:12px;margin-bottom:0;">
+        <input type="search" id="busca-item" class="form-control"
+               placeholder="Digite para filtrar..." autocomplete="off">
+    </div>
+</details>
+
+<div id="grid-cardapio">
+    {% for cat in categorias %}
+    <section class="sec-categoria" id="cat-{{ cat.pk }}" data-cat="cat-{{ cat.pk }}">
+        <h2><span>{{ cat.icone }}</span> {{ cat.nome }}</h2>
+        <div class="grid-produtos">
+            {% for item in cat.itens.all %}
+            <div class="produto-tile" role="button" tabindex="0"
+                 data-id="{{ item.pk }}"
+                 data-nome="{{ item.nome }}"
+                 data-preco="{{ item.preco }}"
+                 data-icone="{{ item.icone_exibicao }}">
+                <button type="button" class="btn-detalhe" title="Observação / quantidade"
+                        aria-label="Opções">⋯</button>
+                <span class="emoji">{{ item.icone_exibicao }}</span>
+                <span class="nome">{{ item.nome }}</span>
+                <span class="preco">R$ {{ item.preco }}</span>
+                {% if item.vegano or item.sem_gluten %}
+                <span class="badges">
+                    {% if item.vegano %}🌱{% endif %}
+                    {% if item.sem_gluten %}🌾{% endif %}
+                </span>
+                {% endif %}
+            </div>
+            {% empty %}
+            <p style="grid-column:1/-1;color:var(--texto-medio);font-size:0.9rem;">Nenhum item disponível.</p>
+            {% endfor %}
+        </div>
+    </section>
+    {% empty %}
+    <p style="text-align:center;color:var(--texto-medio);padding:24px;">
+        Nenhum item no cardápio. <a href="{% url 'cafe:cardapio' %}">Cadastrar itens</a>
+    </p>
+    {% endfor %}
+</div>
+
+<div id="toast" class="toast"></div>
+
+<div id="modal-item" class="modal-overlay" aria-hidden="true">
+    <div class="modal-sheet">
+        <h3 id="modal-titulo">Item</h3>
+        <input type="hidden" id="modal-item-id">
+        <div class="form-group">
+            <label for="modal-qtd">Quantidade</label>
+            <input type="number" id="modal-qtd" class="form-control" value="1" min="0.01" step="0.01">
+        </div>
+        <div class="form-group">
+            <label for="modal-obs">Observação</label>
+            <input type="text" id="modal-obs" class="form-control"
+                   placeholder="Ex: sem açúcar, gelo extra" maxlength="200">
+        </div>
+        <div class="modal-actions">
+            <button type="button" class="btn btn-outline" id="modal-cancelar">Cancelar</button>
+            <button type="button" class="btn btn-primary" id="modal-adicionar">Adicionar</button>
+        </div>
+    </div>
+</div>
+
+<a href="{% url 'cafe:detalhe' comanda.pk %}" class="fab-comanda" id="fab-comanda">
+    Ver comanda <span class="badge-count" id="fab-count">{{ itens_count }}</span>
+</a>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    var urlRapido = '{% url "cafe:adicionar_item_rapido" comanda.pk %}';
+    var csrf = '{{ csrf_token }}';
+    var adding = false;
+    var toastEl = document.getElementById('toast');
+    var totalEl = document.getElementById('total-live');
+    var countEl = document.getElementById('itens-count');
+    var fabCount = document.getElementById('fab-count');
+    var toastTimer = null;
+
+    function showToast(msg) {
+        toastEl.textContent = msg;
+        toastEl.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(function () { toastEl.classList.remove('show'); }, 1800);
+    }
+
+    function formatTotal(val) {
+        var n = parseFloat(val);
+        return isNaN(n) ? val : n.toFixed(2).replace('.', ',');
+    }
+
+    function adicionar(itemId, qtd, obs, tile) {
+        if (adding) return;
+        adding = true;
+        if (tile) {
+            tile.classList.add('adding');
+        }
+        var body = new URLSearchParams();
+        body.append('item_id', itemId);
+        body.append('quantidade', qtd || '1');
+        body.append('observacao', obs || '');
+        body.append('csrfmiddlewaretoken', csrf);
+
+        fetch(urlRapido, {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            body: body,
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+            adding = false;
+            if (tile) {
+                tile.classList.remove('adding');
+                tile.classList.add('added');
+                setTimeout(function () { tile.classList.remove('added'); }, 400);
+            }
+            if (data.ok) {
+                showToast(data.icone + ' ' + data.nome + ' adicionado');
+                totalEl.textContent = formatTotal(data.total);
+                countEl.textContent = data.itens_count;
+                fabCount.textContent = data.itens_count;
+            } else {
+                showToast(data.erro || 'Erro ao adicionar');
+            }
+        })
+        .catch(function () {
+            adding = false;
+            if (tile) tile.classList.remove('adding');
+            showToast('Erro de conexão');
+        });
+    }
+
+    /* Toque rápido nos tiles */
+    document.querySelectorAll('.produto-tile').forEach(function (tile) {
+        tile.addEventListener('click', function (e) {
+            if (e.target.closest('.btn-detalhe')) return;
+            adicionar(tile.dataset.id, '1', '', tile);
+        });
+        tile.querySelector('.btn-detalhe').addEventListener('click', function (e) {
+            e.stopPropagation();
+            abrirModal(tile);
+        });
+    });
+
+    /* Modal obs/qtd */
+    var modal = document.getElementById('modal-item');
+    var modalId = document.getElementById('modal-item-id');
+    var modalTitulo = document.getElementById('modal-titulo');
+    var modalQtd = document.getElementById('modal-qtd');
+    var modalObs = document.getElementById('modal-obs');
+    var tileAtual = null;
+
+    function abrirModal(tile) {
+        tileAtual = tile;
+        modalId.value = tile.dataset.id;
+        modalTitulo.textContent = tile.dataset.icone + ' ' + tile.dataset.nome;
+        modalQtd.value = '1';
+        modalObs.value = '';
+        modal.classList.add('open');
+        modal.setAttribute('aria-hidden', 'false');
+        modalQtd.focus();
+    }
+
+    function fecharModal() {
+        modal.classList.remove('open');
+        modal.setAttribute('aria-hidden', 'true');
+        tileAtual = null;
+    }
+
+    document.getElementById('modal-cancelar').addEventListener('click', fecharModal);
+    modal.addEventListener('click', function (e) {
+        if (e.target === modal) fecharModal();
+    });
+    document.getElementById('modal-adicionar').addEventListener('click', function () {
+        adicionar(modalId.value, modalQtd.value, modalObs.value, tileAtual);
+        fecharModal();
+    });
+
+    /* Filtro por categoria */
+    document.querySelectorAll('.cat-tab').forEach(function (tab) {
+        tab.addEventListener('click', function () {
+            document.querySelectorAll('.cat-tab').forEach(function (t) { t.classList.remove('active'); });
+            tab.classList.add('active');
+            var cat = tab.dataset.cat;
+            document.querySelectorAll('.sec-categoria').forEach(function (sec) {
+                sec.classList.toggle('hidden', cat !== 'todos' && sec.dataset.cat !== cat);
+            });
+        });
+    });
+
+    /* Busca por nome */
+    var busca = document.getElementById('busca-item');
+    busca.addEventListener('input', function () {
+        var q = busca.value.trim().toLowerCase();
+        document.querySelectorAll('.produto-tile').forEach(function (tile) {
+            var match = !q || tile.dataset.nome.toLowerCase().indexOf(q) >= 0;
+            tile.style.display = match ? '' : 'none';
+        });
+        document.querySelectorAll('.sec-categoria').forEach(function (sec) {
+            var visiveis = sec.querySelectorAll('.produto-tile:not([style*="display: none"])');
+            var any = false;
+            sec.querySelectorAll('.produto-tile').forEach(function (t) {
+                if (t.style.display !== 'none') any = true;
+            });
+            sec.classList.toggle('hidden', q.length > 0 && !any);
+        });
+        if (q) {
+            document.querySelectorAll('.cat-tab').forEach(function (t) { t.classList.remove('active'); });
+            document.querySelector('.cat-tab[data-cat="todos"]').classList.add('active');
+        }
+    });
+})();
+</script>
+{% endblock %}

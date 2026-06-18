@@ -86,6 +86,7 @@ urlpatterns = [
     path('vendas/', include('vendas.urls')),
     path('financeiro/', include('financeiro.urls')),
     path('pdv-movel/', include('pdv_movel.urls')),
+    path('cafe/', include('cafe.urls', namespace='cafe')),
     path('cadastros/', include('core.urls')),
 ]
 

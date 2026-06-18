@@ -1,0 +1,75 @@
+{% extends 'cafe/base_cafe.html' %}
+
+{% block title %}Recibo — #{{ comanda.numero }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    @media print {
+        .cafe-header, .no-print { display: none !important; }
+        body { padding-bottom: 0; background: white; }
+        .cafe-main { max-width: 100%; }
+    }
+    .recibo-box {
+        max-width: 360px;
+        margin: 0 auto;
+        background: var(--branco);
+        border-radius: 12px;
+        padding: 24px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+    }
+    .recibo-header { text-align: center; border-bottom: 2px dashed var(--creme-escuro); padding-bottom: 16px; margin-bottom: 16px; }
+    .recibo-total { font-size: 1.5rem; font-weight: 700; color: var(--verde-escuro); text-align: center; margin: 16px 0; }
+    .pix-qr { text-align: center; margin: 16px 0; }
+    .pix-qr img { max-width: 180px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="recibo-box">
+    <div class="recibo-header">
+        <h2 style="color:var(--verde-escuro);">Café Al-qui-mia</h2>
+        <p style="font-size:0.85rem;color:var(--texto-medio);">Código da Terra</p>
+        <p style="margin-top:8px;font-size:0.9rem;">
+            Comanda <strong>#{{ comanda.numero }}</strong><br>
+            {{ comanda.data_fechamento|date:"d/m/Y H:i" }}
+        </p>
+        <p style="margin-top:4px;">{{ comanda.nome_cliente }}</p>
+    </div>
+
+    {% for item in itens %}
+    <div class="item-linha" style="font-size:0.9rem;">
+        <span>{{ item.quantidade|floatformat:-2 }}× {{ item.descricao }}</span>
+        <span>R$ {{ item.subtotal }}</span>
+    </div>
+    {% endfor %}
+
+    <div class="recibo-total">Total: R$ {{ comanda.valor_total }}</div>
+    <p style="text-align:center;font-size:0.9rem;margin-bottom:16px;">
+        Pagamento: <strong>{{ forma_label }}</strong>
+    </p>
+
+    {% if pix_qr %}
+    <div class="pix-qr">
+        <p style="font-size:0.85rem;margin-bottom:8px;">QR Code PIX</p>
+        <img src="{{ pix_qr }}" alt="QR Code PIX">
+    </div>
+    {% endif %}
+
+    <p style="text-align:center;font-size:0.75rem;color:var(--texto-medio);margin-top:16px;">
+        Obrigado pela preferência!
+    </p>
+</div>
+
+<div class="btn-row no-print" style="margin-top:20px;">
+    <a href="{{ whatsapp_url }}" target="_blank" rel="noopener" class="btn btn-secondary">
+        Compartilhar via WhatsApp
+    </a>
+    <a href="{% url 'fiscal:criar_nfce' %}" class="btn btn-primary">
+        Emitir NFC-e
+    </a>
+    <button type="button" class="btn btn-outline" onclick="window.print();">Imprimir</button>
+    <a href="{% url 'cafe:lista' %}" class="btn btn-outline">Voltar às comandas</a>
+</div>
+{% endblock %}
+
+{% block fab %}{% endblock %}

@@ -1,0 +1,81 @@
+<div class="form-group">
+    <label for="categoria">Categoria *</label>
+    <select id="categoria" name="categoria" class="form-control" required>
+        <option value="">Selecione...</option>
+        {% for cat in categorias %}
+        <option value="{{ cat.pk }}" {% if item and item.categoria_id == cat.pk %}selected{% endif %}>
+            {{ cat.icone }} {{ cat.nome }}
+        </option>
+        {% endfor %}
+    </select>
+</div>
+<div class="form-group">
+    <label for="nome">Nome do item *</label>
+    <input type="text" id="nome" name="nome" class="form-control" required
+           value="{{ item.nome|default:'' }}" placeholder="Ex: Latte de Coco da Terra">
+</div>
+<div class="form-group">
+    <label for="icone">Ícone do item (emoji)</label>
+    <input type="text" id="icone" name="icone" class="form-control" maxlength="10"
+           value="{{ item.icone|default:'' }}" placeholder="Ex: 🥥 (vazio = ícone da categoria)">
+</div>
+<div class="form-group">
+    <label for="descricao">Descrição</label>
+    <textarea id="descricao" name="descricao" class="form-control" rows="2"
+              placeholder="Descrição curta para o cardápio">{{ item.descricao|default:'' }}</textarea>
+</div>
+<div class="form-group">
+    <label for="ingredientes">Ingredientes</label>
+    <textarea id="ingredientes" name="ingredientes" class="form-control" rows="2"
+              placeholder="Separados por vírgula">{{ item.ingredientes|default:'' }}</textarea>
+</div>
+<div class="form-group">
+    <label for="preco">Preço (R$) *</label>
+    <input type="text" id="preco" name="preco" class="form-control" required
+           value="{% if item %}{{ item.preco|stringformat:'s' }}{% endif %}"
+           placeholder="0,00" inputmode="decimal">
+</div>
+<div class="form-group">
+    <label for="disponibilidade">Disponibilidade</label>
+    <select id="disponibilidade" name="disponibilidade" class="form-control">
+        {% for val, label in disponibilidade_choices %}
+        <option value="{{ val }}" {% if item and item.disponibilidade == val %}selected{% elif not item and val == 'DISPONIVEL' %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+    </select>
+</div>
+<div class="form-group">
+    <label for="tempo_preparo">Tempo de preparo (min)</label>
+    <input type="number" id="tempo_preparo" name="tempo_preparo" class="form-control" min="1"
+           value="{{ item.tempo_preparo|default:5 }}">
+</div>
+<div class="form-group">
+    <label for="ordem">Ordem na categoria</label>
+    <input type="number" id="ordem" name="ordem" class="form-control" min="0"
+           value="{{ item.ordem|default:0 }}">
+</div>
+
+<div class="checkbox-group">
+    <label class="checkbox-big">
+        <input type="checkbox" name="vegano" {% if item.vegano %}checked{% endif %}>
+        <span>🌱 Vegano</span>
+    </label>
+    <label class="checkbox-big">
+        <input type="checkbox" name="sem_gluten" {% if item.sem_gluten %}checked{% endif %}>
+        <span>🌾 Sem Glúten</span>
+    </label>
+    <label class="checkbox-big">
+        <input type="checkbox" name="destaque" {% if item.destaque %}checked{% endif %}>
+        <span>⭐ Destaque no cardápio</span>
+    </label>
+</div>
+
+<style>
+.checkbox-group { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+.checkbox-big {
+    display: flex; align-items: center; gap: 12px;
+    min-height: 48px; padding: 12px 16px;
+    background: var(--creme); border-radius: 10px;
+    cursor: pointer; font-weight: 600;
+}
+.checkbox-big input { width: 22px; height: 22px; accent-color: var(--verde-escuro); }
+</style>

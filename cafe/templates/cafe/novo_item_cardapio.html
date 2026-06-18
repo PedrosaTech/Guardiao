@@ -1,0 +1,33 @@
+{% extends 'cafe/base_cafe.html' %}
+
+{% block title %}Novo Item do Cardápio{% endblock %}
+
+{% block content %}
+<a href="{% url 'cafe:cardapio' %}" class="back-link">← Cardápio</a>
+
+<div class="card">
+    <h2 style="margin-bottom:16px;">Novo Item</h2>
+    <form method="post">
+        {% csrf_token %}
+        {% include 'cafe/_form_item_fields.html' %}
+        <button type="submit" class="btn btn-primary">Salvar Item</button>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    var preco = document.getElementById('preco');
+    if (!preco) return;
+    preco.addEventListener('blur', function () {
+        var v = preco.value.replace(/[^\d,.]/g, '');
+        if (v.includes(',')) {
+            v = v.replace(/\./g, '').replace(',', '.');
+        }
+        var n = parseFloat(v);
+        if (!isNaN(n)) preco.value = n.toFixed(2).replace('.', ',');
+    });
+})();
+</script>
+{% endblock %}
